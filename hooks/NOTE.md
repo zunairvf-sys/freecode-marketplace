@@ -1,0 +1,1 @@
+Removed non-functional hooks.json (depended on a 257-file scripts/ runtime tightly coupled to the ECC plugin-name resolution; not portable to this marketplace as-is). README kept for reference / future re-port.

@@ -1,0 +1,32 @@
+{
+  "name": "freecode-marketplace",
+  "version": "1.0.0",
+  "description": "FreeCode community plugin layer - agents, skills, commands, hooks, rules, MCP conventions, and operator workflows for FreeCode Code",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "repository": "https://github.com/freecode/marketplace",
+  "license": "MIT",
+  "keywords": [
+    "freecode-code",
+    "agents",
+    "skills",
+    "hooks",
+    "rules",
+    "tdd",
+    "code-review",
+    "security",
+    "workflow",
+    "automation",
+    "best-practices"
+  ],
+  "mcpServers": {},
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
+  ]
+}

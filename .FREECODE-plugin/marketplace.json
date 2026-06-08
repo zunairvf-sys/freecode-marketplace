@@ -1,0 +1,47 @@
+{
+  "name": "freecode-marketplace",
+  "owner": {
+    "name": "FreeCode",
+    "email": "support@freecode.ai"
+  },
+  "metadata": {
+    "description": "FreeCode community skills, agents, hooks, rules, MCP conventions, and operator workflows"
+  },
+  "plugins": [
+    {
+      "name": "freecode-marketplace",
+      "source": "./",
+      "description": "FreeCode community operator layer - agents, skills, legacy command shims, reusable hooks, rules, selective install profiles, and production-ready workflows for FreeCode Code",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "repository": "https://github.com/freecode/marketplace",
+      "license": "MIT",
+      "keywords": [
+        "agents",
+        "skills",
+        "hooks",
+        "commands",
+        "tdd",
+        "code-review",
+        "security",
+        "best-practices"
+      ],
+      "category": "workflow",
+      "tags": [
+        "agents",
+        "skills",
+        "hooks",
+        "commands",
+        "tdd",
+        "code-review",
+        "security",
+        "best-practices"
+      ],
+      "strict": false
+    }
+  ]
+}
