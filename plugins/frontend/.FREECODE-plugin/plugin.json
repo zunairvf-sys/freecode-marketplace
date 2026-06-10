@@ -1,0 +1,27 @@
+{
+  "name": "freecode-frontend",
+  "version": "1.0.0",
+  "description": "Frontend, design-system, accessibility, motion, and UI/UX skills and agents.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": [
+    "frontend",
+    "ui",
+    "ux",
+    "accessibility",
+    "design",
+    "motion"
+  ],
+  "category": "frontend",
+  "mcpServers": {},
+  "agents": [
+    "./agents/"
+  ],
+  "skills": [
+    "./skills/"
+  ]
+}

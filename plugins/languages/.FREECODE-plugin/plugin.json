@@ -1,0 +1,16 @@
+{
+  "name": "freecode-languages",
+  "version": "1.0.0",
+  "description": "Language-specific review agents and coding patterns for Python, Go, Rust, Java, TypeScript, React, Kotlin, C#, and Swift.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["python", "golang", "rust", "java", "typescript", "react", "kotlin", "csharp", "swift"],
+  "category": "languages",
+  "mcpServers": {},
+  "agents": ["./agents/"],
+  "skills": ["./skills/"]
+}

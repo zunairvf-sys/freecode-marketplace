@@ -1,0 +1,29 @@
+{
+  "name": "freecode-content-creative",
+  "version": "1.0.0",
+  "description": "Content creation, marketing, video, and creative production skills and agents.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": [
+    "content",
+    "marketing",
+    "video",
+    "seo",
+    "creative"
+  ],
+  "category": "content",
+  "mcpServers": {},
+  "agents": [
+    "./agents/"
+  ],
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
+  ]
+}

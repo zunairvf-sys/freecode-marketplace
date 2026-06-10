@@ -1,7 +1,7 @@
 {
   "name": "freecode-marketplace",
   "version": "1.0.0",
-  "description": "FreeCode community plugin layer - agents, skills, commands, hooks, rules, MCP conventions, and operator workflows for FreeCode Code",
+  "description": "FreeCode marketplace shared layer - hooks, rules, MCP conventions, contexts, and example workflows for FreeCode Code. Agents, skills, and commands now live in dedicated plugins.",
   "author": {
     "name": "FreeCode",
     "url": "https://freecode.ai"
@@ -22,11 +22,5 @@
     "automation",
     "best-practices"
   ],
-  "mcpServers": {},
-  "skills": [
-    "./skills/"
-  ],
-  "commands": [
-    "./commands/"
-  ]
+  "mcpServers": "./mcp-configs/mcp-servers.json"
 }

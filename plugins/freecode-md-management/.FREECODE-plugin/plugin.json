@@ -1,0 +1,9 @@
+{
+  "name": "freecode-md-management",
+  "description": "Tools to maintain and improve FREECODE.md files - audit quality, capture session learnings, and keep project memory current.",
+  "version": "1.0.0",
+  "author": {
+    "name": "FreeCode",
+    "email": "support@freecode.com"
+  }
+}

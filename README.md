@@ -5,9 +5,10 @@ A community plugin catalog for FreeCode Code: agents, skills, commands, hooks, r
 ## Structure
 
 - `.FREECODE-plugin/` — marketplace + plugin manifests (`marketplace.json`, `plugin.json`)
-- `agents/` — subagent definitions
-- `skills/` — SKILL.md catalog (auto-loaded into agent context by name + description)
-- `commands/` — slash command definitions
+- `plugins/` — individual plugins, each with its own `agents/`, `skills/`, `commands/` as applicable:
+  - `core`, `testing`, `security`, `languages` — everyday development, TDD/eval, security review, and language/framework patterns
+  - `frontend`, `devops`, `data-ml`, `healthcare`, `finance`, `bizops`, `content`, `agent-ops` — domain-specific skills and agents
+  - plus 35+ standalone plugins (playwright, plugin-dev, security-guidance, language LSP servers, etc.)
 - `hooks/` — hook definitions (runtime scripts not yet ported — see `hooks/NOTE.md`)
 - `rules/` — reusable rule sets
 - `contexts/` — context profiles (dev/research/review)
@@ -19,8 +20,10 @@ A community plugin catalog for FreeCode Code: agents, skills, commands, hooks, r
 
 ```
 freecode plugin marketplace add <this-repo-url>
-freecode plugin install freecode-marketplace@freecode-marketplace
+freecode plugin install freecode-core@freecode-marketplace
 ```
+
+Browse `.FREECODE-plugin/marketplace.json` for the full list of installable plugins.
 
 ## License
 

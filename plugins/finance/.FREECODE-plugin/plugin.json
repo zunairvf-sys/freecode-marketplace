@@ -1,0 +1,23 @@
+{
+  "name": "freecode-finance-trading",
+  "version": "1.0.0",
+  "description": "Finance, trading, DeFi, and market-research skills and agents.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": [
+    "finance",
+    "trading",
+    "defi",
+    "markets",
+    "investing"
+  ],
+  "category": "finance",
+  "mcpServers": {},
+  "skills": [
+    "./skills/"
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "freecode-healthcare",
+  "version": "1.0.0",
+  "description": "Healthcare-specific patterns, EMR/CDSS skills, and PHI compliance for clinical software.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": [
+    "healthcare",
+    "hipaa",
+    "emr",
+    "cdss",
+    "compliance"
+  ],
+  "category": "healthcare",
+  "mcpServers": {},
+  "agents": [
+    "./agents/"
+  ],
+  "skills": [
+    "./skills/"
+  ]
+}

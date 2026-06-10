@@ -1,0 +1,14 @@
+{
+  "name": "playwright",
+  "version": "1.0.0",
+  "description": "Lets FreeCode launch a real browser via the Playwright MCP server to navigate, screenshot, and interact with web pages — useful for verifying UI changes and fixing visual bugs.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["playwright", "browser", "e2e", "mcp", "visual-testing"],
+  "category": "testing",
+  "mcpServers": "./mcp-servers.json"
+}

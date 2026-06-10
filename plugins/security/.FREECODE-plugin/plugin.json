@@ -1,0 +1,16 @@
+{
+  "name": "freecode-security",
+  "version": "1.0.0",
+  "description": "Security review, vulnerability scanning, HIPAA compliance, and safety guard agents and skills. Install for security-conscious codebases.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["security", "compliance", "hipaa", "vulnerability", "audit"],
+  "category": "security",
+  "mcpServers": {},
+  "agents": ["./agents/"],
+  "skills": ["./skills/"]
+}

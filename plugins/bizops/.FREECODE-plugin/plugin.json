@@ -1,0 +1,26 @@
+{
+  "name": "freecode-business-ops",
+  "version": "1.0.0",
+  "description": "Business operations: logistics, billing, procurement, and workplace integrations.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": [
+    "operations",
+    "logistics",
+    "billing",
+    "procurement",
+    "jira"
+  ],
+  "category": "business-ops",
+  "mcpServers": {},
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
+  ]
+}

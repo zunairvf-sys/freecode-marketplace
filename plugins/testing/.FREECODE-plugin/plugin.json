@@ -1,0 +1,16 @@
+{
+  "name": "freecode-testing",
+  "version": "1.0.0",
+  "description": "TDD, end-to-end testing, evaluation harness, and verification agents and skills. Install to add test-driven development workflows to FreeCode.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["testing", "tdd", "e2e", "evaluation", "quality"],
+  "category": "testing",
+  "mcpServers": {},
+  "agents": ["./agents/"],
+  "skills": ["./skills/"]
+}

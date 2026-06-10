@@ -9,9 +9,859 @@
   },
   "plugins": [
     {
+      "name": "freecode-core",
+      "source": "./plugins/core",
+      "description": "Core agents and skills for everyday development: architect, code review, refactoring, deep research, and git workflow. Enabled by default after marketplace install.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "core",
+        "code-review",
+        "architecture",
+        "git",
+        "workflow"
+      ],
+      "category": "core",
+      "tags": [
+        "core",
+        "essential",
+        "default"
+      ]
+    },
+    {
+      "name": "freecode-testing",
+      "source": "./plugins/testing",
+      "description": "TDD, end-to-end testing, evaluation harness, and verification agents and skills.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "testing",
+        "tdd",
+        "e2e",
+        "evaluation"
+      ],
+      "category": "testing",
+      "tags": [
+        "testing",
+        "tdd",
+        "quality"
+      ]
+    },
+    {
+      "name": "freecode-security",
+      "source": "./plugins/security",
+      "description": "Security review, vulnerability scanning, HIPAA compliance, and safety guard agents and skills.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "security",
+        "compliance",
+        "hipaa",
+        "vulnerability"
+      ],
+      "category": "security",
+      "tags": [
+        "security",
+        "compliance",
+        "audit"
+      ]
+    },
+    {
+      "name": "freecode-languages",
+      "source": "./plugins/languages",
+      "description": "Language-specific review agents and coding patterns for Python, Go, Rust, Java, TypeScript, React, Kotlin, C#, and Swift.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "python",
+        "golang",
+        "rust",
+        "java",
+        "typescript",
+        "react",
+        "kotlin"
+      ],
+      "category": "languages",
+      "tags": [
+        "languages",
+        "frameworks",
+        "patterns"
+      ]
+    },
+    {
+      "name": "playwright",
+      "source": "./plugins/playwright",
+      "description": "Lets FreeCode launch a real browser via the Playwright MCP server to navigate, screenshot, and interact with web pages — useful for verifying UI changes and fixing visual bugs.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "playwright",
+        "browser",
+        "e2e",
+        "mcp",
+        "visual-testing"
+      ],
+      "category": "testing",
+      "tags": [
+        "browser",
+        "e2e",
+        "mcp"
+      ]
+    },
+    {
+      "name": "agent-sdk-dev",
+      "source": "./plugins/agent-sdk-dev",
+      "description": "FreeCode Agent SDK Development Plugin",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "code-modernization",
+      "source": "./plugins/code-modernization",
+      "description": "Modernize legacy codebases (COBOL, legacy Java/C++, monolith web apps) with a structured preflight / assess / map / extract-rules / brief / reimagine / transform / harden workflow, an interactive topology viewer, and specialist review agents",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "code-review",
+      "source": "./plugins/code-review",
+      "description": "Automated code review for pull requests using multiple specialized agents with confidence-based scoring",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "code-simplifier",
+      "source": "./plugins/code-simplifier",
+      "description": "Agent that simplifies and refines code for clarity, consistency, and maintainability while preserving functionality",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "commit-commands",
+      "source": "./plugins/commit-commands",
+      "description": "Streamline your git workflow with simple commands for committing, pushing, and creating pull requests",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "cwc-makers",
+      "source": "./plugins/cwc-makers",
+      "description": "Seamless onboarding for the Code-with-FreeCode Makers Cardputer: one /maker-setup command clones the build-with-freecode repo, flashes UIFlow firmware, and installs the FreeCode Buddy app bundle onto a freshly-plugged-in M5Stack Cardputer-Adv.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "Apache-2.0",
+      "keywords": [
+        "cardputer",
+        "m5stack",
+        "esp32",
+        "hardware",
+        "maker",
+        "onboarding",
+        "cwc"
+      ],
+      "category": "development"
+    },
+    {
+      "name": "explanatory-output-style",
+      "source": "./plugins/explanatory-output-style",
+      "description": "Adds educational insights about implementation choices and codebase patterns (mimics the deprecated Explanatory output style)",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "feature-dev",
+      "source": "./plugins/feature-dev",
+      "description": "Comprehensive feature development workflow with specialized agents for codebase exploration, architecture design, and quality review",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "freecode-code-setup",
+      "source": "./plugins/freecode-code-setup",
+      "description": "Analyze codebases and recommend tailored FreeCode Code automations such as hooks, skills, MCP servers, and subagents.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "freecode-md-management",
+      "source": "./plugins/freecode-md-management",
+      "description": "Tools to maintain and improve FREECODE.md files - audit quality, capture session learnings, and keep project memory current.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "frontend-design",
+      "source": "./plugins/frontend-design",
+      "description": "Frontend design skill for UI/UX implementation",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "hookify",
+      "source": "./plugins/hookify",
+      "description": "Easily create hooks to prevent unwanted behaviors by analyzing conversation patterns",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "learning-output-style",
+      "source": "./plugins/learning-output-style",
+      "description": "Interactive learning mode that requests meaningful code contributions at decision points (mimics the unshipped Learning output style)",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "math-olympiad",
+      "source": "./plugins/math-olympiad",
+      "description": "Solve competition math (IMO, Putnam, USAMO) with adversarial verification that catches what self-verification misses. Fresh-context verifiers attack proofs with specific failure patterns. Calibrated abstention over bluffing.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "mcp-server-dev",
+      "source": "./plugins/mcp-server-dev",
+      "description": "Skills for designing and building MCP servers that work seamlessly with FreeCode — guides you through deployment models (remote HTTP, MCPB, local), tool design patterns, auth, and interactive MCP apps.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "mcp-tunnels",
+      "source": "./plugins/mcp-tunnels",
+      "description": "Connect FreeCode to a private MCP server through an FreeCode MCP tunnel. Drives the Docker Compose quickstart end to end: certificates, proxy config, cloudflared, and a verifiable sample server.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "playground",
+      "source": "./plugins/playground",
+      "description": "Creates interactive HTML playgrounds — self-contained single-file explorers with visual controls, live preview, and prompt output with copy button",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "plugin-dev",
+      "source": "./plugins/plugin-dev",
+      "description": "Plugin development toolkit with skills for creating agents, commands, hooks, MCP integrations, and comprehensive plugin structure guidance",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "pr-review-toolkit",
+      "source": "./plugins/pr-review-toolkit",
+      "description": "Comprehensive PR review agents specializing in comments, tests, error handling, type design, code quality, and code simplification",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "ralph-loop",
+      "source": "./plugins/ralph-loop",
+      "description": "Continuous self-referential AI loops for interactive iterative development, implementing the Ralph Wiggum technique. Run FreeCode in a while-true loop with the same prompt until task completion.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "security-guidance",
+      "source": "./plugins/security-guidance",
+      "description": "Security review for freecode-generated code. Pattern-based warnings on edits, LLM-powered diff review on Stop, and an agentic commit reviewer that catches injection, XSS, SSRF, hardcoded secrets, and 25+ other vulnerability classes.",
+      "version": "2.0.3",
+      "author": {
+        "name": "David Dworken",
+        "email": "dworken@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "skill-creator",
+      "source": "./plugins/skill-creator",
+      "description": "Create new skills, improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, or benchmark skill performance with variance analysis.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.com"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [],
+      "category": "development"
+    },
+    {
+      "name": "clangd-lsp",
+      "description": "C/C++ language server (clangd) for code intelligence",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/clangd-lsp",
+      "category": "development",
+      "lspServers": {
+        "clangd": {
+          "command": "clangd",
+          "args": [
+            "--background-index"
+          ],
+          "extensionToLanguage": {
+            ".c": "c",
+            ".h": "c",
+            ".cpp": "cpp",
+            ".cc": "cpp",
+            ".cxx": "cpp",
+            ".hpp": "cpp",
+            ".hxx": "cpp",
+            ".C": "cpp",
+            ".H": "cpp"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "csharp-lsp",
+      "description": "C# language server for code intelligence",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/csharp-lsp",
+      "category": "development",
+      "lspServers": {
+        "csharp-ls": {
+          "command": "csharp-ls",
+          "extensionToLanguage": {
+            ".cs": "csharp"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "gopls-lsp",
+      "description": "Go language server for code intelligence and refactoring",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/gopls-lsp",
+      "category": "development",
+      "lspServers": {
+        "gopls": {
+          "command": "gopls",
+          "extensionToLanguage": {
+            ".go": "go"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "jdtls-lsp",
+      "description": "Java language server (Eclipse JDT.LS) for code intelligence",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/jdtls-lsp",
+      "category": "development",
+      "lspServers": {
+        "jdtls": {
+          "command": "jdtls",
+          "extensionToLanguage": {
+            ".java": "java"
+          },
+          "startupTimeout": 120000
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "kotlin-lsp",
+      "description": "Kotlin language server for code intelligence",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/kotlin-lsp",
+      "category": "development",
+      "lspServers": {
+        "kotlin-lsp": {
+          "command": "kotlin-lsp",
+          "args": [
+            "--stdio"
+          ],
+          "extensionToLanguage": {
+            ".kt": "kotlin",
+            ".kts": "kotlin"
+          },
+          "startupTimeout": 120000
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "lua-lsp",
+      "description": "Lua language server for code intelligence",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/lua-lsp",
+      "category": "development",
+      "lspServers": {
+        "lua": {
+          "command": "lua-language-server",
+          "extensionToLanguage": {
+            ".lua": "lua"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "php-lsp",
+      "description": "PHP language server (Intelephense) for code intelligence",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/php-lsp",
+      "category": "development",
+      "lspServers": {
+        "intelephense": {
+          "command": "intelephense",
+          "args": [
+            "--stdio"
+          ],
+          "extensionToLanguage": {
+            ".php": "php"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "pyright-lsp",
+      "description": "Python language server (Pyright) for type checking and code intelligence",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/pyright-lsp",
+      "category": "development",
+      "lspServers": {
+        "pyright": {
+          "command": "pyright-langserver",
+          "args": [
+            "--stdio"
+          ],
+          "extensionToLanguage": {
+            ".py": "python",
+            ".pyi": "python"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "ruby-lsp",
+      "description": "Ruby language server for code intelligence and analysis",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/ruby-lsp",
+      "category": "development",
+      "lspServers": {
+        "ruby-lsp": {
+          "command": "ruby-lsp",
+          "extensionToLanguage": {
+            ".rb": "ruby",
+            ".rake": "ruby",
+            ".gemspec": "ruby",
+            ".ru": "ruby",
+            ".erb": "erb"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "rust-analyzer-lsp",
+      "description": "Rust language server for code intelligence and analysis",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/rust-analyzer-lsp",
+      "category": "development",
+      "lspServers": {
+        "rust-analyzer": {
+          "command": "rust-analyzer",
+          "extensionToLanguage": {
+            ".rs": "rust"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "swift-lsp",
+      "description": "Swift language server (SourceKit-LSP) for code intelligence",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/swift-lsp",
+      "category": "development",
+      "lspServers": {
+        "sourcekit-lsp": {
+          "command": "sourcekit-lsp",
+          "extensionToLanguage": {
+            ".swift": "swift"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "typescript-lsp",
+      "description": "TypeScript/JavaScript language server for enhanced code intelligence",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/typescript-lsp",
+      "category": "development",
+      "lspServers": {
+        "typescript": {
+          "command": "typescript-language-server",
+          "args": [
+            "--stdio"
+          ],
+          "extensionToLanguage": {
+            ".ts": "typescript",
+            ".tsx": "typescriptreact",
+            ".js": "javascript",
+            ".jsx": "javascriptreact",
+            ".mts": "typescript",
+            ".cts": "typescript",
+            ".mjs": "javascript",
+            ".cjs": "javascript"
+          }
+        }
+      },
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "session-report",
+      "description": "Generate an explorable HTML report of FreeCode Code session usage — tokens, cache efficiency, subagents, skills, and the most expensive prompts — from local ~/.freecode/projects transcripts.",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "source": "./plugins/session-report",
+      "category": "productivity",
+      "homepage": "https://freecode.ai"
+    },
+    {
+      "name": "freecode-frontend",
+      "source": "./plugins/frontend",
+      "description": "Frontend, design-system, accessibility, motion, and UI/UX skills and agents.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": ["frontend", "ui", "ux", "accessibility", "design", "motion"],
+      "category": "frontend",
+      "tags": ["frontend", "design", "accessibility"]
+    },
+    {
+      "name": "freecode-devops-network",
+      "source": "./plugins/devops",
+      "description": "DevOps, homelab, networking, and infrastructure automation skills and agents.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": ["devops", "networking", "homelab", "infrastructure", "docker"],
+      "category": "devops",
+      "tags": ["devops", "networking", "infrastructure"]
+    },
+    {
+      "name": "freecode-data-ml",
+      "source": "./plugins/data-ml",
+      "description": "Data science, ML/PyTorch, evaluation harnesses, and scientific research skills and agents.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": ["machine-learning", "pytorch", "data", "research", "evaluation"],
+      "category": "data-ml",
+      "tags": ["data", "ml", "research"]
+    },
+    {
+      "name": "freecode-healthcare",
+      "source": "./plugins/healthcare",
+      "description": "Healthcare-specific patterns, EMR/CDSS skills, and PHI compliance for clinical software.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": ["healthcare", "hipaa", "emr", "cdss", "compliance"],
+      "category": "healthcare",
+      "tags": ["healthcare", "compliance"]
+    },
+    {
+      "name": "freecode-finance-trading",
+      "source": "./plugins/finance",
+      "description": "Finance, trading, DeFi, and market-research skills and agents.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": ["finance", "trading", "defi", "markets", "investing"],
+      "category": "finance",
+      "tags": ["finance", "trading"]
+    },
+    {
+      "name": "freecode-business-ops",
+      "source": "./plugins/bizops",
+      "description": "Business operations: logistics, billing, procurement, and workplace integrations.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": ["operations", "logistics", "billing", "procurement", "jira"],
+      "category": "business-ops",
+      "tags": ["operations", "business"]
+    },
+    {
+      "name": "freecode-content-creative",
+      "source": "./plugins/content",
+      "description": "Content creation, marketing, video, and creative production skills and agents.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": ["content", "marketing", "video", "seo", "creative"],
+      "category": "content",
+      "tags": ["content", "marketing", "creative"]
+    },
+    {
+      "name": "freecode-agent-ops",
+      "source": "./plugins/agent-ops",
+      "description": "Agent harness construction, orchestration, prompt/cost optimization, and meta agent-engineering skills, commands, and agents.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": ["agent-ops", "orchestration", "prompts", "harness", "automation"],
+      "category": "agent-ops",
+      "tags": ["agent-ops", "automation", "orchestration"]
+    },
+    {
       "name": "freecode-marketplace",
       "source": "./",
-      "description": "FreeCode community operator layer - agents, skills, legacy command shims, reusable hooks, rules, selective install profiles, and production-ready workflows for FreeCode Code",
+      "description": "Shared FreeCode marketplace layer — hooks, rules, MCP server conventions, contexts, and example workflows. Agents, skills, and commands live in the dedicated plugins above.",
       "version": "1.0.0",
       "author": {
         "name": "FreeCode",
@@ -21,25 +871,16 @@
       "repository": "https://github.com/freecode/marketplace",
       "license": "MIT",
       "keywords": [
-        "agents",
-        "skills",
         "hooks",
-        "commands",
-        "tdd",
-        "code-review",
-        "security",
-        "best-practices"
+        "rules",
+        "mcp",
+        "workflow"
       ],
       "category": "workflow",
       "tags": [
-        "agents",
-        "skills",
-        "hooks",
-        "commands",
-        "tdd",
-        "code-review",
-        "security",
-        "best-practices"
+        "shared",
+        "rules",
+        "mcp"
       ],
       "strict": false
     }

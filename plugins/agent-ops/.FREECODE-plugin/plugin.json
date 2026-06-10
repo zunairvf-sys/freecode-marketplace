@@ -1,0 +1,29 @@
+{
+  "name": "freecode-agent-ops",
+  "version": "1.0.0",
+  "description": "Agent harness construction, orchestration, prompt/cost optimization, and meta agent-engineering skills, commands, and agents.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": [
+    "agent-ops",
+    "orchestration",
+    "prompts",
+    "harness",
+    "automation"
+  ],
+  "category": "agent-ops",
+  "mcpServers": {},
+  "agents": [
+    "./agents/"
+  ],
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
+  ]
+}

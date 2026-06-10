@@ -1,0 +1,17 @@
+{
+  "name": "freecode-core",
+  "version": "1.0.0",
+  "description": "Core FreeCode agents and skills for everyday development — architect, code review, refactoring, deep research, and git workflow. Enabled by default after marketplace install.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["core", "code-review", "architecture", "git", "workflow", "documentation"],
+  "category": "core",
+  "mcpServers": {},
+  "agents": ["./agents/"],
+  "skills": ["./skills/"],
+  "commands": ["./commands/"]
+}

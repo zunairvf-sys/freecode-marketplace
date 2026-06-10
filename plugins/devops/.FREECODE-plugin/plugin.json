@@ -1,0 +1,29 @@
+{
+  "name": "freecode-devops-network",
+  "version": "1.0.0",
+  "description": "DevOps, homelab, networking, and infrastructure automation skills and agents.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": [
+    "devops",
+    "networking",
+    "homelab",
+    "infrastructure",
+    "docker"
+  ],
+  "category": "devops",
+  "mcpServers": {},
+  "agents": [
+    "./agents/"
+  ],
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
+  ]
+}

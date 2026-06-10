@@ -1,0 +1,29 @@
+{
+  "name": "freecode-data-ml",
+  "version": "1.0.0",
+  "description": "Data science, ML/PyTorch, evaluation harnesses, and scientific research skills and agents.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": [
+    "machine-learning",
+    "pytorch",
+    "data",
+    "research",
+    "evaluation"
+  ],
+  "category": "data-ml",
+  "mcpServers": {},
+  "agents": [
+    "./agents/"
+  ],
+  "skills": [
+    "./skills/"
+  ],
+  "commands": [
+    "./commands/"
+  ]
+}
