@@ -1,0 +1,18 @@
+{
+  "name": "persona-output-styles",
+  "version": "1.0.0",
+  "description": "A collection of role-based output styles (frontend designer, devops engineer, data analyst, security auditor, project manager, and more) that change FreeCode's persona and focus for a session.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": [
+    "output-style",
+    "persona",
+    "roleplay",
+    "workflow"
+  ],
+  "category": "development"
+}

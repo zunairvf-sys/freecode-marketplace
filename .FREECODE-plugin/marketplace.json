@@ -240,6 +240,25 @@
       "category": "development"
     },
     {
+      "name": "persona-output-styles",
+      "source": "./plugins/persona-output-styles",
+      "description": "Role-based output styles (frontend designer, devops engineer, data analyst, security auditor, project manager, video maker, and more) for switching FreeCode's persona and focus per session",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "url": "https://freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "output-style",
+        "persona",
+        "roleplay",
+        "workflow"
+      ],
+      "category": "development"
+    },
+    {
       "name": "feature-dev",
       "source": "./plugins/feature-dev",
       "description": "Comprehensive feature development workflow with specialized agents for codebase exploration, architecture design, and quality review",
