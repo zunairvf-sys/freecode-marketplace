@@ -8,9 +8,17 @@
   },
   "homepage": "https://freecode.ai",
   "license": "MIT",
-  "keywords": ["python", "golang", "rust", "java", "typescript", "react", "kotlin", "csharp", "swift"],
+  "keywords": [
+    "python",
+    "golang",
+    "rust",
+    "java",
+    "typescript",
+    "react",
+    "kotlin",
+    "csharp",
+    "swift"
+  ],
   "category": "languages",
-  "mcpServers": {},
-  "agents": ["./agents/"],
-  "skills": ["./skills/"]
+  "mcpServers": {}
 }

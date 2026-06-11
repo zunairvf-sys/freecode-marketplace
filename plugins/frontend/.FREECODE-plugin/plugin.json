@@ -17,11 +17,5 @@
     "motion"
   ],
   "category": "frontend",
-  "mcpServers": {},
-  "agents": [
-    "./agents/"
-  ],
-  "skills": [
-    "./skills/"
-  ]
+  "mcpServers": {}
 }

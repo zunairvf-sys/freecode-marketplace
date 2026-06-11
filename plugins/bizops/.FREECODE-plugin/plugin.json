@@ -16,11 +16,5 @@
     "jira"
   ],
   "category": "business-ops",
-  "mcpServers": {},
-  "skills": [
-    "./skills/"
-  ],
-  "commands": [
-    "./commands/"
-  ]
+  "mcpServers": {}
 }

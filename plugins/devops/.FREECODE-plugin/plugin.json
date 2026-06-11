@@ -16,14 +16,5 @@
     "docker"
   ],
   "category": "devops",
-  "mcpServers": {},
-  "agents": [
-    "./agents/"
-  ],
-  "skills": [
-    "./skills/"
-  ],
-  "commands": [
-    "./commands/"
-  ]
+  "mcpServers": {}
 }

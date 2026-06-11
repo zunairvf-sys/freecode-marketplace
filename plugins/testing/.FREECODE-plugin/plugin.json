@@ -8,9 +8,13 @@
   },
   "homepage": "https://freecode.ai",
   "license": "MIT",
-  "keywords": ["testing", "tdd", "e2e", "evaluation", "quality"],
+  "keywords": [
+    "testing",
+    "tdd",
+    "e2e",
+    "evaluation",
+    "quality"
+  ],
   "category": "testing",
-  "mcpServers": {},
-  "agents": ["./agents/"],
-  "skills": ["./skills/"]
+  "mcpServers": {}
 }

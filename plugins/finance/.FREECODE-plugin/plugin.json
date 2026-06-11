@@ -16,8 +16,5 @@
     "investing"
   ],
   "category": "finance",
-  "mcpServers": {},
-  "skills": [
-    "./skills/"
-  ]
+  "mcpServers": {}
 }

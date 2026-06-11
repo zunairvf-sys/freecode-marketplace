@@ -16,14 +16,5 @@
     "evaluation"
   ],
   "category": "data-ml",
-  "mcpServers": {},
-  "agents": [
-    "./agents/"
-  ],
-  "skills": [
-    "./skills/"
-  ],
-  "commands": [
-    "./commands/"
-  ]
+  "mcpServers": {}
 }

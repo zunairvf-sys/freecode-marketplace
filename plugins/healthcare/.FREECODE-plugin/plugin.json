@@ -16,11 +16,5 @@
     "compliance"
   ],
   "category": "healthcare",
-  "mcpServers": {},
-  "agents": [
-    "./agents/"
-  ],
-  "skills": [
-    "./skills/"
-  ]
+  "mcpServers": {}
 }

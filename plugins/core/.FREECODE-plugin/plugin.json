@@ -8,10 +8,14 @@
   },
   "homepage": "https://freecode.ai",
   "license": "MIT",
-  "keywords": ["core", "code-review", "architecture", "git", "workflow", "documentation"],
+  "keywords": [
+    "core",
+    "code-review",
+    "architecture",
+    "git",
+    "workflow",
+    "documentation"
+  ],
   "category": "core",
-  "mcpServers": {},
-  "agents": ["./agents/"],
-  "skills": ["./skills/"],
-  "commands": ["./commands/"]
+  "mcpServers": {}
 }

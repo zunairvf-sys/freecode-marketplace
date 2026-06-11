@@ -16,14 +16,5 @@
     "creative"
   ],
   "category": "content",
-  "mcpServers": {},
-  "agents": [
-    "./agents/"
-  ],
-  "skills": [
-    "./skills/"
-  ],
-  "commands": [
-    "./commands/"
-  ]
+  "mcpServers": {}
 }

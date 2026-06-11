@@ -16,14 +16,5 @@
     "automation"
   ],
   "category": "agent-ops",
-  "mcpServers": {},
-  "agents": [
-    "./agents/"
-  ],
-  "skills": [
-    "./skills/"
-  ],
-  "commands": [
-    "./commands/"
-  ]
+  "mcpServers": {}
 }
