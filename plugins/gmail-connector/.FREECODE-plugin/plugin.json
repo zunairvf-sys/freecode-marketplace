@@ -1,6 +1,6 @@
 {
   "name": "freecode-gmail-connector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Full Gmail API connector — read, search, compose, send, label, and manage threads via the Gmail REST API. Zero browser automation required. Uses OAuth 2.0 with local token storage.",
   "author": {
     "name": "FreeCode",

@@ -1,6 +1,6 @@
 {
   "name": "freecode-teams-connector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Microsoft Teams connector — read/send messages, manage channels, view calendar events, and handle tasks via Microsoft Graph API. Uses OAuth 2.0 with local token storage.",
   "author": {
     "name": "FreeCode",

@@ -1,6 +1,6 @@
 {
   "name": "calendar-connector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Google Calendar API connector for scheduling, event management, and calendar operations via MCP tools.",
   "category": "productivity",
   "tags": ["calendar", "google-calendar", "scheduling", "events", "mcp"],

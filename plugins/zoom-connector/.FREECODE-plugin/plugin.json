@@ -1,6 +1,6 @@
 {
   "name": "freecode-zoom-connector",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Zoom API connector — schedule, start, end, and manage meetings. View meeting recordings, participants, and user profiles via Zoom REST API. Uses OAuth 2.0 with local token storage.",
   "author": {
     "name": "FreeCode",
