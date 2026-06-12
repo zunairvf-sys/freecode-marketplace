@@ -24,6 +24,8 @@
 
 const fs = require("fs");
 const path = require("path");
+const http = require("http");
+const { URL } = require("url");
 
 // --- Config ---
 const CLIENT_ID = process.env.CALENDAR_CLIENT_ID || "";
@@ -36,6 +38,80 @@ const CALENDAR_API = "https://www.googleapis.com/calendar/v3";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
 const SCOPES = "https://www.googleapis.com/auth/calendar";
+
+// --- OAuth redirect callback server ---
+//
+// The OAuth URL points the browser at REDIRECT_URI after consent, but
+// nothing listens there by default — the browser shows "site can't be
+// reached" and the `code` param is lost. This starts a short-lived local
+// HTTP server that catches that redirect, exchanges the code for tokens via
+// `exchangeFn`, and shows a confirmation page.
+let callbackServer = null;
+
+function startCallbackServer(redirectUri, exchangeFn) {
+  if (callbackServer) return;
+
+  let redirect;
+  try {
+    redirect = new URL(redirectUri);
+  } catch {
+    return;
+  }
+  if (redirect.hostname !== "localhost" && redirect.hostname !== "127.0.0.1") return;
+  const port = Number(redirect.port) || 80;
+
+  const page = (title, message) => `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>${title}</title></head>
+<body style="font-family: -apple-system, system-ui, sans-serif; text-align: center; padding: 60px 20px;">
+<h2>${title}</h2>
+<p>${message}</p>
+<p>You can close this tab and return to VS Code.</p>
+</body></html>`;
+
+  const server = http.createServer(async (req, res) => {
+    let reqUrl;
+    try {
+      reqUrl = new URL(req.url, redirectUri);
+    } catch {
+      res.writeHead(400);
+      res.end();
+      return;
+    }
+
+    const code = reqUrl.searchParams.get("code");
+    const error = reqUrl.searchParams.get("error");
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+
+    if (error) {
+      res.writeHead(400);
+      res.end(page("Authorization failed", `The provider returned an error: <code>${error}</code>.`));
+    } else if (code) {
+      try {
+        await exchangeFn(code.trim());
+        res.writeHead(200);
+        res.end(page("Connected", "Authentication succeeded and your token was saved."));
+      } catch (e) {
+        res.writeHead(500);
+        res.end(page("Authorization failed", `Token exchange failed: ${e.message}`));
+      }
+    } else {
+      res.writeHead(404);
+      res.end(page("Not found", "No authorization code was present in this request."));
+    }
+
+    setTimeout(() => {
+      server.close();
+      if (callbackServer === server) callbackServer = null;
+    }, 1000);
+  });
+
+  server.on("error", () => {
+    if (callbackServer === server) callbackServer = null;
+  });
+
+  server.listen(port);
+  callbackServer = server;
+}
 
 // --- CalendarClient ---
 class CalendarClient {
@@ -195,15 +271,16 @@ function defTool(name, desc, params, handler) {
 
 defTool(
   "auth_calendar",
-  "Get the OAuth authorization URL for Google Calendar. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_calendar_exchange_code.",
+  "Get the OAuth authorization URL for Google Calendar. Open this URL in your browser and authorize the app. The redirect will be captured automatically and your token saved; if that fails, copy the authorization code from the redirect URL and pass it to auth_calendar_exchange_code.",
   {},
   async () => {
     const authUrl = calendar.getAuthUrl();
+    startCallbackServer(REDIRECT_URI, (code) => calendar.exchangeCode(code));
     return {
       content: [
         {
           type: "text",
-          text: `Open this URL in your browser to authorize Google Calendar access:\n\n${authUrl}\n\nAfter authorizing, you will be redirected to a URL containing a 'code' parameter. Copy that code and pass it to the auth_calendar_exchange_code tool.`,
+          text: `Open this URL in your browser to authorize Google Calendar access:\n\n${authUrl}\n\nAfter authorizing, the browser will be redirected back and your token will be saved automatically. If the page shows an error instead of a confirmation, copy the 'code' parameter from the redirect URL and pass it to the auth_calendar_exchange_code tool.`,
         },
       ],
     };

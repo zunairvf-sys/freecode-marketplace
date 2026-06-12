@@ -1,14 +1,10 @@
 {
   "name": "gmail-connector",
   "version": "1.0.1",
-  "type": "module",
-  "description": "Gmail API MCP connector for FreeCode",
+  "description": "Zero-dependency Gmail API MCP connector for FreeCode",
   "main": "mcp/gmail-server.js",
   "scripts": {
     "start": "node mcp/gmail-server.js"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "engines": {
     "node": ">=18"
