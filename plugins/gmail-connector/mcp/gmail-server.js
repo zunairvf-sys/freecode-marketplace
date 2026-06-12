@@ -1,50 +1,49 @@
 #!/usr/bin/env node
 /**
- * Gmail MCP Server - API-based Gmail integration (zero-dependency)
+ * Gmail MCP Server — rich structured data edition
  *
- * Provides tools for reading, searching, composing, sending, and labeling emails
- * via the Gmail REST API. Uses OAuth 2.0 with token persistence.
+ * Every tool returns a structured JSON object (not prose) so the LM can reason
+ * about the data. Text fields are still present for quick reading, but the
+ * primary output is always a parsed, structured payload.
  *
- * Uses raw JSON-RPC over stdio — no external npm dependencies required.
- *
- * Tools exposed:
- *   - auth_gmail                 Get OAuth authorization URL
- *   - auth_gmail_exchange_code   Exchange authorization code for tokens
- *   - gmail_read_inbox           List recent messages with filters
- *   - gmail_read_message         Read a full message by ID
- *   - gmail_search_messages      Search messages by query
- *   - gmail_compose_draft        Create a draft email
- *   - gmail_send_message         Send an email immediately
- *   - gmail_reply_to_thread      Reply to an existing thread
- *   - gmail_add_labels           Add or remove labels from a message
- *   - gmail_get_labels           List all labels
- *   - gmail_delete_message       Move a message to trash
- *   - gmail_mark_as_read         Mark messages as read/unread
- *   - gmail_thread_history       Get full thread conversation
- *   - gmail_send_html            Send HTML-formatted email
- *
- * Setup:
- *   1. Create project at https://console.cloud.google.com
- *   2. Enable Gmail API
- *   3. Create OAuth 2.0 credentials (Desktop app type)
- *   4. Download client_secret.json or copy Client ID + Secret
- *   5. Install plugin via marketplace: freecode plugin install freecode-gmail-connector
- *   6. Call auth_gmail tool to begin OAuth flow
+ * Tools:
+ *   auth_gmail                   Get OAuth URL (starts local callback server)
+ *   auth_gmail_exchange_code     Exchange code for tokens
+ *   gmail_list_messages          List messages with full metadata per result
+ *   gmail_get_message            Get a single message: all headers + full MIME tree + body parts
+ *   gmail_get_raw_headers        Get every header of a message as key→value map
+ *   gmail_get_attachments        List all attachments on a message with size, mimeType, partId
+ *   gmail_download_attachment    Download an attachment as base64 (or save path)
+ *   gmail_search_messages        Search with full metadata per result
+ *   gmail_get_thread             Full thread: every message with headers + snippets
+ *   gmail_send_message           Send email (text or HTML)
+ *   gmail_reply_to_thread        Reply in a thread (sets In-Reply-To + References correctly)
+ *   gmail_compose_draft          Save a draft
+ *   gmail_get_labels             List labels with counts
+ *   gmail_modify_labels          Add/remove labels
+ *   gmail_mark_read              Mark read/unread
+ *   gmail_trash_message          Move to trash
+ *   gmail_batch_get_metadata     Batch-fetch metadata for up to 50 message IDs in one call
  */
 
 const { readFile, writeFile } = require("fs");
 const { promisify } = require("util");
 const http = require("http");
 const { URL } = require("url");
+const readline = require("readline");
 
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
 
-// --- Token helpers ---
+// ---------------------------------------------------------------------------
+// Token persistence
+// ---------------------------------------------------------------------------
 
 function getTokenPath() {
   const p = process.env.GMAIL_TOKEN_FILE || "~/.freecode/.gmail-token.json";
-  return p.startsWith("~") ? (process.env.HOME || process.env.USERPROFILE || "") + p.slice(1) : p;
+  return p.startsWith("~")
+    ? (process.env.HOME || process.env.USERPROFILE || "") + p.slice(1)
+    : p;
 }
 
 async function getToken() {
@@ -56,43 +55,20 @@ async function saveToken(token) {
   await writeFileAsync(getTokenPath(), JSON.stringify(token, null, 2));
 }
 
-// --- Gmail API Client ---
+// ---------------------------------------------------------------------------
+// OAuth
+// ---------------------------------------------------------------------------
 
-const GMAIL_API = "https://gmail.googleapis.com/gmail/v1";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const CLIENT_ID = process.env.GMAIL_CLIENT_ID || "";
 const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET || "";
 const REDIRECT_URI = process.env.GMAIL_REDIRECT_URI || "http://localhost:41122";
 
-async function ensureAuthenticated() {
-  const token = await getToken();
-  if (!token || token.expiry_time < Date.now() / 1000) {
-    if (token && token.refresh_token) {
-      const res = await fetch(TOKEN_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          client_id: CLIENT_ID,
-          client_secret: CLIENT_SECRET,
-          grant_type: "refresh_token",
-          refresh_token: token.refresh_token,
-        }),
-      });
-      const newToken = await res.json();
-      newToken.expiry_time = Date.now() / 1000 + newToken.expires_in;
-      newToken.refresh_token = token.refresh_token;
-      await saveToken(newToken);
-      return true;
-    }
-    return false;
-  }
-  return true;
-}
-
 function getAuthUrl() {
-  const scope = encodeURIComponent(
-    "https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.send"
-  );
+  const scope = encodeURIComponent([
+    "https://www.googleapis.com/auth/gmail.modify",
+    "https://www.googleapis.com/auth/gmail.send",
+  ].join(" "));
   return (
     `https://accounts.google.com/o/oauth2/v2/auth` +
     `?client_id=${CLIENT_ID}` +
@@ -125,402 +101,830 @@ async function exchangeCode(code) {
   throw new Error(`Token exchange failed: ${JSON.stringify(data)}`);
 }
 
-// --- OAuth redirect callback server ---
-//
-// Google redirects the browser to REDIRECT_URI (default
-// http://localhost:41122) with a `code` (or `error`) query param after the
-// user grants/denies access. Nothing listens on that port by default, so the
-// browser shows "site can't be reached" and the code is never captured. This
-// starts a short-lived local HTTP server that catches that redirect,
-// exchanges the code for tokens, persists them, and shows the user a page
-// confirming they can return to the app.
+async function ensureAuthenticated() {
+  const token = await getToken();
+  if (!token) return false;
+  if (token.expiry_time < Date.now() / 1000 + 60) {
+    if (!token.refresh_token) return false;
+    const res = await fetch(TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        grant_type: "refresh_token",
+        refresh_token: token.refresh_token,
+      }),
+    });
+    const newToken = await res.json();
+    if (!newToken.access_token) return false;
+    newToken.expiry_time = Date.now() / 1000 + (newToken.expires_in || 3600);
+    newToken.refresh_token = token.refresh_token;
+    await saveToken(newToken);
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// Local OAuth callback server
+// ---------------------------------------------------------------------------
 
 let callbackServer = null;
 
 function startCallbackServer() {
   if (callbackServer) return;
-
   let redirect;
-  try {
-    redirect = new URL(REDIRECT_URI);
-  } catch {
-    return;
-  }
+  try { redirect = new URL(REDIRECT_URI); } catch { return; }
   if (redirect.hostname !== "localhost" && redirect.hostname !== "127.0.0.1") return;
   const port = Number(redirect.port) || 80;
 
-  const page = (title, message) => `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><title>${title}</title></head>
-<body style="font-family: -apple-system, system-ui, sans-serif; text-align: center; padding: 60px 20px;">
-<h2>${title}</h2>
-<p>${message}</p>
-<p>You can close this tab and return to VS Code.</p>
-</body></html>`;
+  const page = (title, msg) =>
+    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${title}</title></head>` +
+    `<body style="font-family:system-ui;text-align:center;padding:60px 20px">` +
+    `<h2>${title}</h2><p>${msg}</p><p>You can close this tab.</p></body></html>`;
 
   const server = http.createServer(async (req, res) => {
-    let reqUrl;
-    try {
-      reqUrl = new URL(req.url, REDIRECT_URI);
-    } catch {
-      res.writeHead(400);
-      res.end();
-      return;
-    }
-
-    const code = reqUrl.searchParams.get("code");
-    const error = reqUrl.searchParams.get("error");
+    let url;
+    try { url = new URL(req.url, REDIRECT_URI); } catch { res.writeHead(400); res.end(); return; }
+    const code = url.searchParams.get("code");
+    const error = url.searchParams.get("error");
     res.setHeader("Content-Type", "text/html; charset=utf-8");
-
     if (error) {
       res.writeHead(400);
-      res.end(page("Gmail authorization failed", `Google returned an error: <code>${error}</code>.`));
+      res.end(page("Authorization failed", `Google returned: <code>${error}</code>`));
     } else if (code) {
       try {
         await exchangeCode(code);
         res.writeHead(200);
-        res.end(page("Gmail connected", "Authentication succeeded and your token was saved."));
+        res.end(page("Gmail connected", "Authentication succeeded. Token saved."));
       } catch (e) {
         res.writeHead(500);
-        res.end(page("Gmail authorization failed", `Token exchange failed: ${e.message}`));
+        res.end(page("Token exchange failed", e.message));
       }
     } else {
       res.writeHead(404);
-      res.end(page("Not found", "No authorization code was present in this request."));
+      res.end(page("Not found", "No code in request."));
     }
-
-    setTimeout(() => {
-      server.close();
-      if (callbackServer === server) callbackServer = null;
-    }, 1000);
+    setTimeout(() => { server.close(); if (callbackServer === server) callbackServer = null; }, 1000);
   });
 
-  server.on("error", () => {
-    if (callbackServer === server) callbackServer = null;
-  });
-
+  server.on("error", () => { if (callbackServer === server) callbackServer = null; });
   server.listen(port);
   callbackServer = server;
 }
 
-async function gmailRequest(method, path, body) {
+// ---------------------------------------------------------------------------
+// Gmail REST API client
+// ---------------------------------------------------------------------------
+
+const GMAIL_BASE = "https://gmail.googleapis.com/gmail/v1";
+
+async function gmailReq(method, path, body) {
   const token = await getToken();
-  const url = `${GMAIL_API}${path}`;
+  if (!token) throw new Error("Not authenticated");
   const opts = {
     method,
-    headers: {
-      "Authorization": `Bearer ${token.access_token}`,
-      "Content-Type": "application/json",
-    },
+    headers: { Authorization: `Bearer ${token.access_token}`, "Content-Type": "application/json" },
   };
   if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(url, opts);
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`Gmail API ${res.status}: ${err}`);
-  }
-  return res.json();
+  const res = await fetch(`${GMAIL_BASE}${path}`, opts);
+  const text = await res.text();
+  if (!res.ok) throw new Error(`Gmail API ${res.status} ${path}: ${text}`);
+  return text ? JSON.parse(text) : {};
 }
 
-// --- Encode/Decode Helpers ---
+// Batch HTTP multipart — runs up to 100 sub-requests in a single HTTPS round-trip.
+// Returns array of parsed response bodies in the same order as `requests`.
+async function gmailBatch(requests) {
+  const token = await getToken();
+  if (!token) throw new Error("Not authenticated");
 
-function encodeMimeMessage(from, to, subject, body, html, replyTo, cc) {
-  const boundaries = ["----=_Part_0", "----=_Part_1", "----=_Part_2", "----=_Boundary_"];
+  const boundary = "batch_boundary_freecode";
+  let body = "";
+  requests.forEach((req, i) => {
+    body += `--${boundary}\r\nContent-Type: application/http\r\nContent-ID: <item${i}>\r\n\r\n`;
+    body += `${req.method || "GET"} ${req.path}\r\n`;
+    if (req.headers) {
+      for (const [k, v] of Object.entries(req.headers)) body += `${k}: ${v}\r\n`;
+    }
+    body += "\r\n";
+    if (req.body) body += JSON.stringify(req.body) + "\r\n";
+  });
+  body += `--${boundary}--`;
+
+  const res = await fetch("https://www.googleapis.com/batch/gmail/v1", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token.access_token}`,
+      "Content-Type": `multipart/mixed; boundary=${boundary}`,
+    },
+    body,
+  });
+
+  const raw = await res.text();
+  // Parse multipart response: extract each HTTP sub-response body
+  const responseBoundaryMatch = res.headers.get("content-type")?.match(/boundary=([^\s;,]+)/);
+  const rb = responseBoundaryMatch ? responseBoundaryMatch[1] : boundary;
+  const parts = raw.split(`--${rb}`).slice(1);
+  return parts.map(part => {
+    const bodyStart = part.indexOf("\r\n\r\n", part.indexOf("\r\n\r\n") + 4);
+    if (bodyStart === -1) return null;
+    const jsonBody = part.slice(bodyStart + 4).replace(/\r?\n?--$/, "").trim();
+    if (!jsonBody) return null;
+    try { return JSON.parse(jsonBody); } catch { return null; }
+  }).filter(Boolean);
+}
+
+// ---------------------------------------------------------------------------
+// MIME helpers
+// ---------------------------------------------------------------------------
+
+function headerVal(payload, name) {
+  const h = (payload?.headers || []).find(h => h.name.toLowerCase() === name.toLowerCase());
+  return h ? h.value : "";
+}
+
+/** Return ALL headers as { name: value } map, multi-value headers become arrays */
+function allHeaders(payload) {
+  const out = {};
+  for (const h of payload?.headers || []) {
+    const k = h.name.toLowerCase();
+    if (out[k] === undefined) out[k] = h.value;
+    else if (Array.isArray(out[k])) out[k].push(h.value);
+    else out[k] = [out[k], h.value];
+  }
+  return out;
+}
+
+function decodeB64Url(data) {
+  if (!data) return "";
+  return Buffer.from(data.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf-8");
+}
+
+/**
+ * Walk the MIME tree and return a structured breakdown:
+ * {
+ *   bodies: [{ mimeType, content, size }]        — all decoded text/plain + text/html parts
+ *   attachments: [{ partId, filename, mimeType, size, attachmentId }]
+ *   inlineImages: [{ partId, contentId, mimeType, size, attachmentId }]
+ *   rawTree: <the full payload object for deep inspection>
+ * }
+ */
+function parseMimeTree(payload) {
+  const result = { bodies: [], attachments: [], inlineImages: [] };
+
+  function walk(part, depth) {
+    if (!part) return;
+    const mime = part.mimeType || "";
+    const disp = headerVal(part, "Content-Disposition");
+    const filename = part.filename || headerVal(part, "Content-Disposition").match(/filename="?([^";]+)/i)?.[1] || "";
+    const contentId = headerVal(part, "Content-ID").replace(/[<>]/g, "");
+    const isAttachment = disp.toLowerCase().startsWith("attachment") || (filename && !contentId);
+    const isInline = contentId && filename && !mime.startsWith("text/");
+
+    if (mime.startsWith("text/") && !isAttachment) {
+      const content = decodeB64Url(part.body?.data);
+      result.bodies.push({
+        mimeType: mime,
+        content,
+        size: part.body?.size || content.length,
+        partId: part.partId || "0",
+      });
+    } else if (isInline) {
+      result.inlineImages.push({
+        partId: part.partId,
+        contentId,
+        mimeType: mime,
+        size: part.body?.size || 0,
+        attachmentId: part.body?.attachmentId || null,
+        filename,
+      });
+    } else if (isAttachment || (filename && part.body?.attachmentId)) {
+      result.attachments.push({
+        partId: part.partId,
+        filename: filename || "unnamed",
+        mimeType: mime,
+        size: part.body?.size || 0,
+        attachmentId: part.body?.attachmentId || null,
+      });
+    }
+
+    for (const sub of part.parts || []) walk(sub, depth + 1);
+  }
+
+  walk(payload, 0);
+  return result;
+}
+
+/** Pick the best plain-text body. Prefer text/plain, fall back to stripped text/html */
+function bestBody(parsed) {
+  const plain = parsed.bodies.find(b => b.mimeType === "text/plain");
+  if (plain) return plain.content;
+  const html = parsed.bodies.find(b => b.mimeType === "text/html");
+  if (html) return html.content.replace(/<[^>]+>/g, " ").replace(/\s{2,}/g, " ").trim();
+  return "";
+}
+
+/** Strip quoted reply sections (lines starting with >) from a body string */
+function stripQuotedReply(text) {
+  if (!text) return "";
+  const lines = text.split("\n");
+  const out = [];
+  let inQuote = false;
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed.startsWith(">") || /^On .+ wrote:$/.test(trimmed)) {
+      inQuote = true;
+      continue;
+    }
+    if (inQuote && trimmed === "") continue;
+    inQuote = false;
+    out.push(line);
+  }
+  return out.join("\n").trim();
+}
+
+// ---------------------------------------------------------------------------
+// MIME encode for sending
+// ---------------------------------------------------------------------------
+
+function encodeMime({ from, to, cc, bcc, replyTo, subject, textBody, htmlBody, inReplyTo, references }) {
+  const boundary = "----=_Part_" + Date.now();
   let mime = "";
-
-  mime += `From: ${from}\r\n`;
+  mime += `From: ${from || "me"}\r\n`;
   mime += `To: ${Array.isArray(to) ? to.join(", ") : to}\r\n`;
   if (cc) mime += `Cc: ${cc}\r\n`;
+  if (bcc) mime += `Bcc: ${bcc}\r\n`;
   if (replyTo) mime += `Reply-To: ${replyTo}\r\n`;
+  if (inReplyTo) mime += `In-Reply-To: ${inReplyTo}\r\n`;
+  if (references) mime += `References: ${references}\r\n`;
   mime += `Subject: ${subject}\r\n`;
   mime += "MIME-Version: 1.0\r\n";
 
-  if (html) {
-    mime += `Content-Type: multipart/alternative; boundary="${boundaries[0]}"\r\n`;
-    mime += `\r\n--${boundaries[0]}\r\n`;
-    mime += `Content-Type: text/plain; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n`;
-    mime += body.replace(/<[^>]*>/g, "") + "\r\n";
-    mime += `\r\n--${boundaries[0]}\r\n`;
-    mime += `Content-Type: text/html; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n`;
-    mime += body + "\r\n";
-    mime += `\r\n--${boundaries[0]}--\r\n`;
+  if (htmlBody && textBody) {
+    mime += `Content-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
+    mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n${textBody}\r\n`;
+    mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n${htmlBody}\r\n`;
+    mime += `--${boundary}--\r\n`;
+  } else if (htmlBody) {
+    mime += `Content-Type: multipart/alternative; boundary="${boundary}"\r\n\r\n`;
+    const stripped = htmlBody.replace(/<[^>]+>/g, " ").replace(/\s{2,}/g, " ").trim();
+    mime += `--${boundary}\r\nContent-Type: text/plain; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n${stripped}\r\n`;
+    mime += `--${boundary}\r\nContent-Type: text/html; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n${htmlBody}\r\n`;
+    mime += `--${boundary}--\r\n`;
   } else {
-    mime += 'Content-Type: text/plain; charset="UTF-8"\r\n';
-    mime += "Content-Transfer-Encoding: 7bit\r\n";
-    mime += `\r\n${body}\r\n`;
+    mime += `Content-Type: text/plain; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n${textBody || ""}\r\n`;
   }
 
   return Buffer.from(mime).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
-// Gmail API messages.get returns headers as a [{name, value}] array on
-// payload (and each part), and body content as base64url in
-// payload.body.data (simple messages) or nested payload.parts[].body.data
-// (multipart) — never as a raw RFC822 blob, so headers must be read from
-// `headers`, not decoded from the body.
-function getHeader(payload, name) {
-  const match = (payload?.headers || []).find(h => h.name.toLowerCase() === name.toLowerCase());
-  return match ? match.value : "";
+// ---------------------------------------------------------------------------
+// Response helpers
+// ---------------------------------------------------------------------------
+
+const NOT_AUTHED = {
+  content: [{
+    type: "text",
+    text: JSON.stringify({ error: "not_authenticated", message: "Call auth_gmail first, complete browser flow, then auth_gmail_exchange_code." }),
+  }],
+};
+
+function ok(data) {
+  return { content: [{ type: "text", text: JSON.stringify(data, null, 2) }] };
 }
 
-function decodeBase64Url(data) {
-  if (!data) return "";
-  return Buffer.from(data.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf-8");
+function err(e) {
+  return {
+    content: [{ type: "text", text: JSON.stringify({ error: "api_error", message: String(e?.message || e) }) }],
+    isError: true,
+  };
 }
 
-function findBodyPart(payload, mimeType) {
-  if (!payload) return "";
-  if (payload.mimeType === mimeType && payload.body?.data) return decodeBase64Url(payload.body.data);
-  for (const part of payload.parts || []) {
-    const found = findBodyPart(part, mimeType);
-    if (found) return found;
-  }
-  return "";
-}
-
-function getMessageBody(payload) {
-  return findBodyPart(payload, "text/plain") || findBodyPart(payload, "text/html") || decodeBase64Url(payload?.body?.data);
-}
-
-// --- Tool Implementations ---
-
-const unauthMsg = { content: [{ type: "text", text: "Not authenticated with Gmail. Call auth_gmail to get the authorization URL, complete the browser flow, then call auth_gmail_exchange_code with the code." }] };
+// ---------------------------------------------------------------------------
+// Tool definitions
+// ---------------------------------------------------------------------------
 
 const tools = {
+
   auth_gmail: {
-    description: "Get the OAuth authorization URL for Gmail. Open this URL in your browser and authorize the app. The redirect will be captured automatically and your token saved; if that fails, copy the authorization code from the redirect URL and pass it to auth_gmail_exchange_code.",
+    description: "Get the OAuth authorization URL for Gmail. Opens a local callback server to capture the redirect automatically.",
     parameters: {},
     handler: async () => {
       startCallbackServer();
-      return { content: [{ type: "text", text: `Open this URL in your browser to authorize Gmail access:\n\n${getAuthUrl()}\n\nAfter authorizing, the browser will be redirected back and your token will be saved automatically. If the page shows an error instead of a confirmation, copy the 'code' parameter from the redirect URL and pass it to the auth_gmail_exchange_code tool.` }] };
+      return ok({
+        action: "open_url",
+        url: getAuthUrl(),
+        instructions: "Open the URL in a browser. On success the token is saved automatically. If the browser shows an error, copy the 'code' param from the redirect URL and pass it to auth_gmail_exchange_code.",
+      });
     },
   },
 
   auth_gmail_exchange_code: {
-    description: "Exchange an OAuth authorization code for Gmail access tokens. Call this after completing the browser auth flow.",
+    description: "Exchange an OAuth authorization code for access + refresh tokens.",
     parameters: { code: { type: "string", description: "The authorization code from the redirect URL" } },
     handler: async ({ code }) => {
       try {
         await exchangeCode(code);
-        return { content: [{ type: "text", text: "Gmail authentication successful! Token saved. You can now use Gmail tools." }] };
-      } catch (e) {
-        return { content: [{ type: "text", text: `Auth failed: ${e.message}` }], isError: true };
-      }
+        return ok({ success: true, message: "Authenticated. Token saved. You can now use all Gmail tools." });
+      } catch (e) { return err(e); }
     },
   },
 
-  gmail_read_inbox: {
-    description: "List recent messages in your inbox. Supports filtering by sender, recipient, subject, and labels.",
+  // -------------------------------------------------------------------------
+  // Reading
+  // -------------------------------------------------------------------------
+
+  gmail_list_messages: {
+    description: "List messages with full metadata (from, to, subject, date, snippet, labels, attachment count). Returns structured array. Replaces the old gmail_read_inbox.",
     parameters: {
-      maxResults: { type: "string", description: "Max messages to return (default: 20)", default: "20" },
-      query: { type: "string", description: 'Search query (e.g., "from:alice@example.com is:unread")' },
+      maxResults: { type: "number", description: "Max messages (1-100, default 20)" },
+      query: { type: "string", description: "Gmail search query. E.g. 'is:unread from:alice@example.com has:attachment'" },
+      pageToken: { type: "string", description: "Page token from previous response for pagination" },
+      includeSpamTrash: { type: "boolean", description: "Include spam/trash (default false)" },
     },
-    handler: async ({ maxResults, query }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const qs = new URLSearchParams({ maxResults: maxResults || "20", q: query || "", includeSpamTrash: "false" });
-      const data = await gmailRequest("GET", `/users/me/messages?${qs}`);
-      const messages = data.messages || [];
-      // messages.list only returns id/threadId; fetch metadata (snippet,
-      // From, Subject) for the messages we're about to display.
-      const top = messages.slice(0, 10);
-      const detailed = await Promise.all(top.map(m => {
-        const metaQs = new URLSearchParams({ format: "metadata" });
-        metaQs.append("metadataHeaders", "Subject");
-        metaQs.append("metadataHeaders", "From");
-        return gmailRequest("GET", `/users/me/messages/${m.id}?${metaQs}`);
-      }));
-      const lines = detailed.map((full, i) =>
-        `${i + 1}. ID: ${full.id} | Thread: ${full.threadId} | From: ${getHeader(full.payload, "From")} | Subject: ${getHeader(full.payload, "Subject")} | Snippet: ${full.snippet || "N/A"}`
-      );
-      return {
-        content: [{ type: "text", text: `Found ${messages.length} messages.\n${lines.join("\n")}` }],
-      };
+    handler: async ({ maxResults = 20, query = "", pageToken, includeSpamTrash = false }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const qs = new URLSearchParams({
+          maxResults: String(Math.min(100, maxResults)),
+          q: query,
+          includeSpamTrash: String(includeSpamTrash),
+        });
+        if (pageToken) qs.set("pageToken", pageToken);
+
+        const list = await gmailReq("GET", `/users/me/messages?${qs}`);
+        const ids = (list.messages || []).map(m => m.id);
+
+        if (ids.length === 0) {
+          return ok({ total: 0, messages: [], nextPageToken: list.nextPageToken || null });
+        }
+
+        // Batch-fetch metadata for all returned IDs
+        const batchReqs = ids.map(id => ({
+          method: "GET",
+          path: `/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date&metadataHeaders=Content-Type`,
+        }));
+        const results = await gmailBatch(batchReqs);
+
+        const messages = results.map(msg => {
+          if (!msg || msg.error) return { id: msg?.id, error: msg?.error?.message || "fetch_failed" };
+          const mime = parseMimeTree(msg.payload);
+          return {
+            id: msg.id,
+            threadId: msg.threadId,
+            subject: headerVal(msg.payload, "Subject"),
+            from: headerVal(msg.payload, "From"),
+            to: headerVal(msg.payload, "To"),
+            date: headerVal(msg.payload, "Date"),
+            snippet: msg.snippet || "",
+            labels: msg.labelIds || [],
+            unread: (msg.labelIds || []).includes("UNREAD"),
+            attachmentCount: mime.attachments.length,
+            hasInlineImages: mime.inlineImages.length > 0,
+            sizeEstimate: msg.sizeEstimate || 0,
+          };
+        });
+
+        return ok({
+          total: list.resultSizeEstimate || messages.length,
+          count: messages.length,
+          nextPageToken: list.nextPageToken || null,
+          messages,
+        });
+      } catch (e) { return err(e); }
     },
   },
 
-  gmail_read_message: {
-    description: "Read a full email message by its ID. Returns headers, body, and snippet.",
-    parameters: { messageId: { type: "string", description: "The Gmail message ID to read" } },
+  gmail_get_message: {
+    description: "Get a single message with ALL headers, complete MIME tree breakdown, decoded body parts, attachment list, and inline image list. Use this when you need full details of an email.",
+    parameters: {
+      messageId: { type: "string", description: "Gmail message ID" },
+      stripQuotedReply: { type: "boolean", description: "Strip quoted reply sections from body (default true)" },
+      includeRawTree: { type: "boolean", description: "Include the raw MIME payload tree for deep inspection (default false)" },
+    },
+    handler: async ({ messageId, stripQuotedReply: doStrip = true, includeRawTree = false }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const msg = await gmailReq("GET", `/users/me/messages/${messageId}?format=full`);
+        const mime = parseMimeTree(msg.payload);
+        const headers = allHeaders(msg.payload);
+        const plainBody = bestBody(mime);
+        const body = doStrip ? stripQuotedReply(plainBody) : plainBody;
+
+        const result = {
+          id: msg.id,
+          threadId: msg.threadId,
+          labels: msg.labelIds || [],
+          unread: (msg.labelIds || []).includes("UNREAD"),
+          sizeEstimate: msg.sizeEstimate || 0,
+          historyId: msg.historyId,
+          internalDate: msg.internalDate,
+          // Key headers extracted for convenience
+          subject: headers["subject"] || "",
+          from: headers["from"] || "",
+          to: headers["to"] || "",
+          cc: headers["cc"] || "",
+          date: headers["date"] || "",
+          messageId: headers["message-id"] || "",
+          inReplyTo: headers["in-reply-to"] || "",
+          references: headers["references"] || "",
+          // All headers for full inspection
+          headers,
+          // Body
+          body,
+          bodyMimeType: mime.bodies[0]?.mimeType || "text/plain",
+          bodyParts: mime.bodies.map(b => ({ mimeType: b.mimeType, size: b.size, partId: b.partId })),
+          // Attachments
+          attachments: mime.attachments,
+          attachmentCount: mime.attachments.length,
+          // Inline images
+          inlineImages: mime.inlineImages,
+          // Snippet
+          snippet: msg.snippet || "",
+        };
+
+        if (includeRawTree) result.rawPayloadTree = msg.payload;
+
+        return ok(result);
+      } catch (e) { return err(e); }
+    },
+  },
+
+  gmail_get_raw_headers: {
+    description: "Return every header of a message as a key→value map. Useful for debugging routing, DKIM, spam scores, or reply threading.",
+    parameters: { messageId: { type: "string", description: "Gmail message ID" } },
     handler: async ({ messageId }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const msg = await gmailRequest("GET", `/users/me/messages/${messageId}`);
-      const from = getHeader(msg.payload, "From");
-      const to = getHeader(msg.payload, "To");
-      const date = getHeader(msg.payload, "Date");
-      const subject = getHeader(msg.payload, "Subject");
-      const body = getMessageBody(msg.payload);
-      return { content: [{ type: "text", text: `From: ${from}\nTo: ${to}\nDate: ${date}\nSubject: ${subject}\n\n${body}` }] };
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const msg = await gmailReq("GET", `/users/me/messages/${messageId}?format=metadata&metadataHeaders=*`);
+        const headers = allHeaders(msg.payload);
+        return ok({ id: msg.id, headerCount: Object.keys(headers).length, headers });
+      } catch (e) { return err(e); }
+    },
+  },
+
+  gmail_get_attachments: {
+    description: "List every attachment on a message with its partId, filename, mimeType, and size. Does not download content.",
+    parameters: { messageId: { type: "string", description: "Gmail message ID" } },
+    handler: async ({ messageId }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const msg = await gmailReq("GET", `/users/me/messages/${messageId}?format=full`);
+        const mime = parseMimeTree(msg.payload);
+        return ok({
+          messageId,
+          attachmentCount: mime.attachments.length,
+          inlineImageCount: mime.inlineImages.length,
+          attachments: mime.attachments.map(a => ({
+            ...a,
+            downloadTool: "gmail_download_attachment",
+            hint: `Use gmail_download_attachment with messageId="${messageId}" and attachmentId="${a.attachmentId}"`,
+          })),
+          inlineImages: mime.inlineImages,
+        });
+      } catch (e) { return err(e); }
+    },
+  },
+
+  gmail_download_attachment: {
+    description: "Download an attachment by its attachmentId and return as base64. Get the attachmentId from gmail_get_attachments.",
+    parameters: {
+      messageId: { type: "string", description: "Gmail message ID the attachment belongs to" },
+      attachmentId: { type: "string", description: "Attachment ID (from gmail_get_attachments)" },
+      filename: { type: "string", description: "Filename hint (informational only)" },
+    },
+    handler: async ({ messageId, attachmentId, filename = "" }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const data = await gmailReq("GET", `/users/me/messages/${messageId}/attachments/${attachmentId}`);
+        const sizeBytes = data.size || 0;
+        const base64 = (data.data || "").replace(/-/g, "+").replace(/_/g, "/");
+        return ok({
+          messageId,
+          attachmentId,
+          filename,
+          sizeBytes,
+          sizeMB: (sizeBytes / 1048576).toFixed(2),
+          encoding: "base64",
+          data: base64,
+        });
+      } catch (e) { return err(e); }
     },
   },
 
   gmail_search_messages: {
-    description: "Search messages using Gmail query syntax. Supports operators: from:, to:, subject:, has:attachment, older:, newer:, is:unread, etc.",
+    description: "Search with Gmail query syntax. Returns full metadata per match (not just snippets). Supports: from:, to:, subject:, has:attachment, is:unread, newer_than:7d, filename:pdf, etc.",
     parameters: {
-      query: { type: "string", description: 'Gmail search query (e.g., "from:boss@company.com has:attachment newer:2024/01/01")' },
-      maxResults: { type: "string", description: "Max results (default: 20)", default: "20" },
+      query: { type: "string", description: "Gmail search query" },
+      maxResults: { type: "number", description: "Max results (1-100, default 20)" },
+      pageToken: { type: "string", description: "Pagination token" },
     },
-    handler: async ({ query, maxResults }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const qs = new URLSearchParams({ maxResults: maxResults || "20", q: query || "", includeSpamTrash: "false" });
-      const data = await gmailRequest("GET", `/users/me/messages?${qs}`);
-      const messages = data.messages || [];
-      const results = await Promise.all(
-        messages.slice(0, 10).map(async m => {
-          const full = await gmailRequest("GET", `/users/me/messages/${m.id}`);
-          return { id: m.id, snippet: full.snippet, labels: full.labelIds };
-        })
-      );
-      return { content: [{ type: "text", text: `Search results for "${query}":\n${JSON.stringify(results, null, 2)}` }] };
+    handler: async ({ query, maxResults = 20, pageToken }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const qs = new URLSearchParams({ q: query || "", maxResults: String(Math.min(100, maxResults)) });
+        if (pageToken) qs.set("pageToken", pageToken);
+        const list = await gmailReq("GET", `/users/me/messages?${qs}`);
+        const ids = (list.messages || []).map(m => m.id);
+        if (ids.length === 0) return ok({ query, total: 0, messages: [], nextPageToken: null });
+
+        const batchReqs = ids.map(id => ({
+          method: "GET",
+          path: `/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date&metadataHeaders=Message-ID`,
+        }));
+        const results = await gmailBatch(batchReqs);
+
+        const messages = results.map(msg => {
+          if (!msg || msg.error) return { error: msg?.error?.message || "fetch_failed" };
+          const mime = parseMimeTree(msg.payload);
+          return {
+            id: msg.id,
+            threadId: msg.threadId,
+            subject: headerVal(msg.payload, "Subject"),
+            from: headerVal(msg.payload, "From"),
+            to: headerVal(msg.payload, "To"),
+            date: headerVal(msg.payload, "Date"),
+            messageId: headerVal(msg.payload, "Message-ID"),
+            snippet: msg.snippet || "",
+            labels: msg.labelIds || [],
+            unread: (msg.labelIds || []).includes("UNREAD"),
+            attachmentCount: mime.attachments.length,
+            sizeEstimate: msg.sizeEstimate || 0,
+          };
+        });
+
+        return ok({
+          query,
+          total: list.resultSizeEstimate || messages.length,
+          count: messages.length,
+          nextPageToken: list.nextPageToken || null,
+          messages,
+        });
+      } catch (e) { return err(e); }
     },
   },
+
+  gmail_get_thread: {
+    description: "Get a full email thread with every message's headers and body. Returns structured conversation array sorted chronologically.",
+    parameters: {
+      threadId: { type: "string", description: "Gmail thread ID" },
+      stripQuotedReply: { type: "boolean", description: "Strip quoted reply text from each message (default true)" },
+    },
+    handler: async ({ threadId, stripQuotedReply: doStrip = true }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const thread = await gmailReq("GET", `/users/me/threads/${threadId}?format=full`);
+        const messages = (thread.messages || []).map(msg => {
+          const mime = parseMimeTree(msg.payload);
+          const plainBody = bestBody(mime);
+          return {
+            id: msg.id,
+            threadId: msg.threadId,
+            date: headerVal(msg.payload, "Date"),
+            from: headerVal(msg.payload, "From"),
+            to: headerVal(msg.payload, "To"),
+            cc: headerVal(msg.payload, "CC"),
+            subject: headerVal(msg.payload, "Subject"),
+            messageId: headerVal(msg.payload, "Message-ID"),
+            inReplyTo: headerVal(msg.payload, "In-Reply-To"),
+            snippet: msg.snippet || "",
+            labels: msg.labelIds || [],
+            unread: (msg.labelIds || []).includes("UNREAD"),
+            body: doStrip ? stripQuotedReply(plainBody) : plainBody,
+            attachments: mime.attachments,
+            attachmentCount: mime.attachments.length,
+          };
+        });
+
+        return ok({
+          threadId,
+          messageCount: messages.length,
+          subject: messages[0]?.subject || "",
+          participants: [...new Set(messages.flatMap(m => [m.from, ...(m.to?.split(",") || [])]).map(s => s.trim()).filter(Boolean))],
+          messages,
+        });
+      } catch (e) { return err(e); }
+    },
+  },
+
+  gmail_batch_get_metadata: {
+    description: "Fetch metadata for up to 50 message IDs in a single API call. Useful when you already have IDs and need from/to/subject/date quickly.",
+    parameters: {
+      messageIds: { type: "array", items: { type: "string" }, description: "Array of message IDs (max 50)" },
+    },
+    handler: async ({ messageIds }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const ids = (messageIds || []).slice(0, 50);
+        if (ids.length === 0) return ok({ messages: [] });
+
+        const batchReqs = ids.map(id => ({
+          method: "GET",
+          path: `/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date&metadataHeaders=Message-ID&metadataHeaders=In-Reply-To`,
+        }));
+        const results = await gmailBatch(batchReqs);
+
+        const messages = results.map((msg, i) => {
+          if (!msg || msg.error) return { id: ids[i], error: msg?.error?.message || "fetch_failed" };
+          return {
+            id: msg.id,
+            threadId: msg.threadId,
+            subject: headerVal(msg.payload, "Subject"),
+            from: headerVal(msg.payload, "From"),
+            to: headerVal(msg.payload, "To"),
+            date: headerVal(msg.payload, "Date"),
+            messageId: headerVal(msg.payload, "Message-ID"),
+            inReplyTo: headerVal(msg.payload, "In-Reply-To"),
+            labels: msg.labelIds || [],
+            unread: (msg.labelIds || []).includes("UNREAD"),
+            snippet: msg.snippet || "",
+            sizeEstimate: msg.sizeEstimate || 0,
+          };
+        });
+
+        return ok({ count: messages.length, messages });
+      } catch (e) { return err(e); }
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // Sending
+  // -------------------------------------------------------------------------
 
   gmail_send_message: {
-    description: "Send an email immediately via the Gmail API. Plain text or HTML.",
+    description: "Send an email. Supports plain text and/or HTML body. Set both textBody and htmlBody for a proper multipart/alternative message.",
     parameters: {
-      to: { type: "string", description: "Recipient email address(es), comma-separated for multiple" },
-      subject: { type: "string", description: "Email subject line" },
-      body: { type: "string", description: "Email body content" },
-      html: { type: "boolean", description: "Set to true for HTML body", default: false },
-      cc: { type: "string", description: "CC recipients (optional)" },
-      replyTo: { type: "string", description: "Reply-To address (optional)" },
+      to: { type: "string", description: "Recipient(s), comma-separated" },
+      subject: { type: "string", description: "Subject line" },
+      textBody: { type: "string", description: "Plain text body" },
+      htmlBody: { type: "string", description: "HTML body (optional — use with or instead of textBody)" },
+      cc: { type: "string", description: "CC recipients" },
+      bcc: { type: "string", description: "BCC recipients" },
+      replyTo: { type: "string", description: "Reply-To address" },
     },
-    handler: async ({ to, subject, body, html, cc, replyTo }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const fromAddress = process.env.GMAIL_FROM_ADDRESS || "";
-      const raw = encodeMimeMessage(fromAddress || "me", to, subject, body, html || false, replyTo || null, cc || null);
-      const sent = await gmailRequest("POST", `/users/me/messages/send`, { raw });
-      return { content: [{ type: "text", text: `Email sent successfully.\nMessage ID: ${sent.id}\nThread ID: ${sent.threadId}` }] };
-    },
-  },
-
-  gmail_compose_draft: {
-    description: "Create a draft email without sending it. Useful for review before sending.",
-    parameters: {
-      to: { type: "string", description: "Recipient email address(es)" },
-      subject: { type: "string", description: "Draft subject line" },
-      body: { type: "string", description: "Draft body content" },
-      html: { type: "boolean", description: "Set to true for HTML body", default: false },
-    },
-    handler: async ({ to, subject, body, html }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const raw = encodeMimeMessage("", to, subject, body, html || false);
-      const draft = await gmailRequest("POST", `/users/me/drafts`, { raw });
-      return { content: [{ type: "text", text: `Draft created successfully.\nDraft ID: ${draft.id}\nMessage ID: ${draft.message?.id}` }] };
+    handler: async ({ to, subject, textBody, htmlBody, cc, bcc, replyTo }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const from = process.env.GMAIL_FROM_ADDRESS || "me";
+        const raw = encodeMime({ from, to, cc, bcc, replyTo, subject, textBody, htmlBody });
+        const sent = await gmailReq("POST", `/users/me/messages/send`, { raw });
+        return ok({ success: true, id: sent.id, threadId: sent.threadId, labelIds: sent.labelIds });
+      } catch (e) { return err(e); }
     },
   },
 
   gmail_reply_to_thread: {
-    description: "Reply to an existing email thread by thread ID.",
+    description: "Reply to a thread. Automatically sets In-Reply-To and References headers from the last message so Gmail groups it correctly.",
     parameters: {
-      threadId: { type: "string", description: "The Gmail thread ID to reply to" },
-      body: { type: "string", description: "Reply body text" },
+      threadId: { type: "string", description: "Thread ID to reply to" },
+      textBody: { type: "string", description: "Reply body (plain text)" },
+      htmlBody: { type: "string", description: "Reply body (HTML, optional)" },
+      replyAll: { type: "boolean", description: "Reply-all (CC all original recipients). Default false." },
     },
-    handler: async ({ threadId, body }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const thread = await gmailRequest("GET", `/users/me/threads/${threadId}`);
-      const lastMsg = thread.messages[thread.messages.length - 1];
-      const from = getHeader(lastMsg.payload, "From");
-      const subject = getHeader(lastMsg.payload, "Subject");
-      const raw = encodeMimeMessage("", from, `Re: ${subject}`, body);
-      const sent = await gmailRequest("POST", `/users/me/messages/send`, { raw });
-      return { content: [{ type: "text", text: `Reply sent to thread ${threadId}.\nMessage ID: ${sent.id}` }] };
+    handler: async ({ threadId, textBody, htmlBody, replyAll = false }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const thread = await gmailReq("GET", `/users/me/threads/${threadId}?format=metadata&metadataHeaders=From&metadataHeaders=To&metadataHeaders=CC&metadataHeaders=Subject&metadataHeaders=Message-ID&metadataHeaders=References`);
+        const last = thread.messages[thread.messages.length - 1];
+        const from = process.env.GMAIL_FROM_ADDRESS || "me";
+        const replyTo = headerVal(last.payload, "From");
+        const subject = headerVal(last.payload, "Subject");
+        const origMsgId = headerVal(last.payload, "Message-ID");
+        const origRefs = headerVal(last.payload, "References");
+        const references = [origRefs, origMsgId].filter(Boolean).join(" ").trim();
+
+        let cc = undefined;
+        if (replyAll) {
+          const origTo = headerVal(last.payload, "To");
+          const origCc = headerVal(last.payload, "CC");
+          cc = [origTo, origCc].filter(Boolean).join(", ");
+        }
+
+        const raw = encodeMime({
+          from,
+          to: replyTo,
+          cc,
+          subject: subject.startsWith("Re:") ? subject : `Re: ${subject}`,
+          textBody,
+          htmlBody,
+          inReplyTo: origMsgId,
+          references,
+        });
+        const sent = await gmailReq("POST", `/users/me/messages/send`, { raw, threadId });
+        return ok({ success: true, id: sent.id, threadId: sent.threadId, repliedTo: replyTo });
+      } catch (e) { return err(e); }
     },
   },
+
+  gmail_compose_draft: {
+    description: "Create a draft (not sent). Returns draft ID and message ID.",
+    parameters: {
+      to: { type: "string", description: "Recipient(s)" },
+      subject: { type: "string", description: "Subject" },
+      textBody: { type: "string", description: "Plain text body" },
+      htmlBody: { type: "string", description: "HTML body (optional)" },
+      cc: { type: "string", description: "CC" },
+    },
+    handler: async ({ to, subject, textBody, htmlBody, cc }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const from = process.env.GMAIL_FROM_ADDRESS || "me";
+        const raw = encodeMime({ from, to, cc, subject, textBody, htmlBody });
+        const draft = await gmailReq("POST", `/users/me/drafts`, { message: { raw } });
+        return ok({ success: true, draftId: draft.id, messageId: draft.message?.id });
+      } catch (e) { return err(e); }
+    },
+  },
+
+  // -------------------------------------------------------------------------
+  // Labels & management
+  // -------------------------------------------------------------------------
 
   gmail_get_labels: {
-    description: "List all labels in your Gmail account.",
+    description: "List all labels with message counts and types.",
     parameters: {},
     handler: async () => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const labels = await gmailRequest("GET", `/users/me/labels`);
-      return { content: [{ type: "text", text: `Labels (${labels.labels?.length || 0}):\n${(labels.labels || []).map(l => `  ${l.id} - ${l.name} (messages: ${l.messageCount})`).join("\n")}` }] };
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const data = await gmailReq("GET", `/users/me/labels`);
+        const labels = (data.labels || []).map(l => ({
+          id: l.id,
+          name: l.name,
+          type: l.type,
+          messageListVisibility: l.messageListVisibility,
+          labelListVisibility: l.labelListVisibility,
+          messagesTotal: l.messagesTotal,
+          messagesUnread: l.messagesUnread,
+          threadsTotal: l.threadsTotal,
+          threadsUnread: l.threadsUnread,
+        }));
+        const system = labels.filter(l => l.type === "system");
+        const user = labels.filter(l => l.type === "user");
+        return ok({ total: labels.length, systemLabels: system, userLabels: user });
+      } catch (e) { return err(e); }
     },
   },
 
-  gmail_add_labels: {
-    description: "Add or remove labels from a message.",
+  gmail_modify_labels: {
+    description: "Add or remove labels from a message. Pass label IDs (e.g. 'UNREAD', 'STARRED', or a user label ID from gmail_get_labels).",
     parameters: {
-      messageId: { type: "string", description: "The message ID to label" },
-      addLabels: { type: "string", description: "Comma-separated label names to add" },
-      removeLabels: { type: "string", description: "Comma-separated label names to remove" },
+      messageId: { type: "string", description: "Message ID to modify" },
+      addLabelIds: { type: "array", items: { type: "string" }, description: "Label IDs to add" },
+      removeLabelIds: { type: "array", items: { type: "string" }, description: "Label IDs to remove" },
     },
-    handler: async ({ messageId, addLabels, removeLabels }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const body = {};
-      if (addLabels) body.addLabelIds = addLabels.split(",").map(s => s.trim());
-      if (removeLabels) body.removeLabelIds = removeLabels.split(",").map(s => s.trim());
-      await gmailRequest("PUT", `/users/me/messages/${messageId}/modify`, body);
-      return { content: [{ type: "text", text: `Labels updated for message ${messageId}.` }] };
+    handler: async ({ messageId, addLabelIds = [], removeLabelIds = [] }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const updated = await gmailReq("POST", `/users/me/messages/${messageId}/modify`, {
+          addLabelIds,
+          removeLabelIds,
+        });
+        return ok({ success: true, messageId, labels: updated.labelIds || [] });
+      } catch (e) { return err(e); }
     },
   },
 
-  gmail_delete_message: {
-    description: "Permanently delete a message (move to Trash).",
-    parameters: { messageId: { type: "string", description: "The message ID to delete" } },
+  gmail_mark_read: {
+    description: "Mark a message as read or unread.",
+    parameters: {
+      messageId: { type: "string", description: "Message ID" },
+      read: { type: "boolean", description: "true = mark read, false = mark unread" },
+    },
+    handler: async ({ messageId, read = true }) => {
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        const body = read ? { removeLabelIds: ["UNREAD"] } : { addLabelIds: ["UNREAD"] };
+        const updated = await gmailReq("POST", `/users/me/messages/${messageId}/modify`, body);
+        return ok({ success: true, messageId, read, labels: updated.labelIds || [] });
+      } catch (e) { return err(e); }
+    },
+  },
+
+  gmail_trash_message: {
+    description: "Move a message to Trash.",
+    parameters: { messageId: { type: "string", description: "Message ID to trash" } },
     handler: async ({ messageId }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      await gmailRequest("DELETE", `/users/me/messages/${messageId}`);
-      return { content: [{ type: "text", text: `Message ${messageId} moved to Trash.` }] };
+      if (!(await ensureAuthenticated())) return NOT_AUTHED;
+      try {
+        await gmailReq("POST", `/users/me/messages/${messageId}/trash`, {});
+        return ok({ success: true, messageId, trashed: true });
+      } catch (e) { return err(e); }
     },
   },
 
-  gmail_mark_as_read: {
-    description: "Mark messages as read or unread.",
-    parameters: {
-      messageId: { type: "string", description: "The message ID to mark" },
-      markRead: { type: "boolean", description: "true to mark as read, false to mark as unread", default: true },
-    },
-    handler: async ({ messageId, markRead }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const body = markRead ? { removeLabelIds: ["UNREAD"] } : { addLabelIds: ["UNREAD"] };
-      await gmailRequest("PUT", `/users/me/messages/${messageId}/modify`, body);
-      return { content: [{ type: "text", text: `Message ${messageId} marked as ${markRead ? "read" : "unread"}.` }] };
-    },
-  },
-
-  gmail_thread_history: {
-    description: "Get the full conversation thread for a given thread ID.",
-    parameters: { threadId: { type: "string", description: "The Gmail thread ID" } },
-    handler: async ({ threadId }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const thread = await gmailRequest("GET", `/users/me/threads/${threadId}`);
-      const messages = thread.messages || [];
-      const summary = messages.map((m, i) => {
-        const date = getHeader(m.payload, "Date");
-        const from = getHeader(m.payload, "From");
-        const subject = getHeader(m.payload, "Subject");
-        return `${i + 1}. [${date}] ${from}: ${subject}`;
-      }).join("\n");
-      return { content: [{ type: "text", text: `Thread ${threadId} (${messages.length} messages):\n${summary}` }] };
-    },
-  },
-
-  gmail_send_html: {
-    description: "Send an HTML-formatted email. Supports inline styles, tables, and embedded content.",
-    parameters: {
-      to: { type: "string", description: "Recipient email address(es)" },
-      subject: { type: "string", description: "Email subject" },
-      htmlBody: { type: "string", description: "HTML content for the email body" },
-      cc: { type: "string", description: "CC recipients (optional)" },
-    },
-    handler: async ({ to, subject, htmlBody, cc }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
-      const raw = encodeMimeMessage("", to, subject, htmlBody, true, null, cc || null);
-      const sent = await gmailRequest("POST", `/users/me/messages/send`, { raw });
-      return { content: [{ type: "text", text: `HTML email sent successfully.\nMessage ID: ${sent.id}` }] };
-    },
-  },
 };
 
-// --- JSON-RPC Server (raw stdio) ---
+// ---------------------------------------------------------------------------
+// JSON-RPC stdio server
+// ---------------------------------------------------------------------------
 
-const readline = require("readline");
 const rl = readline.createInterface({ input: process.stdin });
 
 rl.on("line", async (raw) => {
   let request;
-  try {
-    request = JSON.parse(raw);
-  } catch {
+  try { request = JSON.parse(raw); }
+  catch {
     process.stdout.write(JSON.stringify({ jsonrpc: "2.0", error: { code: -32700, message: "Parse error" }, id: null }) + "\n");
     return;
   }
@@ -533,7 +937,7 @@ rl.on("line", async (raw) => {
       result: {
         protocolVersion: "2024-11-05",
         capabilities: { tools: {} },
-        serverInfo: { name: "gmail-api-connector", version: "1.0.0" },
+        serverInfo: { name: "gmail-mcp-rich", version: "2.0.0" },
       },
       id,
     }) + "\n");
@@ -543,10 +947,14 @@ rl.on("line", async (raw) => {
   if (method === "notifications/initialized") return;
 
   if (method === "tools/list") {
-    const toolList = Object.values(tools).map(t => ({
-      name: Object.keys(tools).find(k => tools[k] === t),
+    const toolList = Object.entries(tools).map(([name, t]) => ({
+      name,
       description: t.description,
-      inputSchema: { type: "object", properties: t.parameters, required: [] },
+      inputSchema: {
+        type: "object",
+        properties: t.parameters,
+        required: [],
+      },
     }));
     process.stdout.write(JSON.stringify({ jsonrpc: "2.0", result: { tools: toolList }, id }) + "\n");
     return;
@@ -554,22 +962,38 @@ rl.on("line", async (raw) => {
 
   if (method === "tools/call") {
     const toolName = params?.name;
-    const arguments_ = params?.arguments || {};
+    const args = params?.arguments || {};
     const tool = tools[toolName];
     if (!tool) {
-      process.stdout.write(JSON.stringify({ jsonrpc: "2.0", error: { code: -32601, message: `Unknown tool: ${toolName}` }, id }) + "\n");
+      process.stdout.write(JSON.stringify({
+        jsonrpc: "2.0",
+        error: { code: -32601, message: `Unknown tool: ${toolName}` },
+        id,
+      }) + "\n");
       return;
     }
     try {
-      const result = await tool.handler(arguments_);
-      process.stdout.write(JSON.stringify({ jsonrpc: "2.0", result: { content: result.content, isError: result.isError }, id }) + "\n");
+      const result = await tool.handler(args);
+      process.stdout.write(JSON.stringify({
+        jsonrpc: "2.0",
+        result: { content: result.content, isError: result.isError },
+        id,
+      }) + "\n");
     } catch (e) {
-      process.stdout.write(JSON.stringify({ jsonrpc: "2.0", result: { content: [{ type: "text", text: e.message }], isError: true }, id }) + "\n");
+      process.stdout.write(JSON.stringify({
+        jsonrpc: "2.0",
+        result: { content: [{ type: "text", text: JSON.stringify({ error: "handler_crash", message: e.message }) }], isError: true },
+        id,
+      }) + "\n");
     }
     return;
   }
 
-  process.stdout.write(JSON.stringify({ jsonrpc: "2.0", error: { code: -32601, message: `Unknown method: ${method}` }, id }) + "\n");
+  process.stdout.write(JSON.stringify({
+    jsonrpc: "2.0",
+    error: { code: -32601, message: `Unknown method: ${method}` },
+    id,
+  }) + "\n");
 });
 
-console.error("Gmail MCP server running on stdio");
+process.stderr.write("Gmail MCP server v2 (rich data) running on stdio\n");
