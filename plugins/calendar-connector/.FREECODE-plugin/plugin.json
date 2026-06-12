@@ -1,0 +1,57 @@
+{
+  "name": "calendar-connector",
+  "version": "1.0.0",
+  "description": "Google Calendar API connector for scheduling, event management, and calendar operations via MCP tools.",
+  "category": "productivity",
+  "tags": ["calendar", "google-calendar", "scheduling", "events", "mcp"],
+  "author": "FreeCode",
+  "license": "MIT",
+  "user_config": {
+    "CALENDAR_PROJECT_ID": {
+      "required": true,
+      "secret": false,
+      "description": "Google Cloud Project ID"
+    },
+    "CALENDAR_CLIENT_ID": {
+      "required": true,
+      "secret": true,
+      "description": "Google OAuth Client ID"
+    },
+    "CALENDAR_CLIENT_SECRET": {
+      "required": true,
+      "secret": true,
+      "description": "Google OAuth Client Secret"
+    },
+    "CALENDAR_REDIRECT_URI": {
+      "required": false,
+      "secret": false,
+      "default": "http://localhost:41123",
+      "description": "OAuth redirect URI"
+    },
+    "CALENDAR_TOKEN_FILE": {
+      "required": false,
+      "secret": false,
+      "default": "~/.freecode/.calendar-token.json",
+      "description": "Path to stored OAuth token"
+    }
+  },
+  "mcpServers": {
+    "calendar-api": {
+      "command": "node",
+      "args": ["${FREECODE_PLUGIN_ROOT}/mcp/calendar-server.js"],
+      "env": {
+        "CALENDAR_PROJECT_ID": "${FREECODE_PLUGIN_OPTION_CALENDAR_PROJECT_ID}",
+        "CALENDAR_CLIENT_ID": "${FREECODE_PLUGIN_OPTION_CALENDAR_CLIENT_ID}",
+        "CALENDAR_CLIENT_SECRET": "${FREECODE_PLUGIN_OPTION_CALENDAR_CLIENT_SECRET}",
+        "CALENDAR_REDIRECT_URI": "${FREECODE_PLUGIN_OPTION_CALENDAR_REDIRECT_URI}",
+        "CALENDAR_TOKEN_FILE": "${FREECODE_PLUGIN_OPTION_CALENDAR_TOKEN_FILE}"
+      }
+    }
+  },
+  "skills": [
+    {
+      "name": "calendar-manage",
+      "path": "./skills/calendar-manage/SKILL.md"
+    }
+  ]
+}

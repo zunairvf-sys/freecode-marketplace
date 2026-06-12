@@ -902,6 +902,106 @@
         "mcp"
       ],
       "strict": false
+    },
+    {
+      "name": "gmail-connector",
+      "source": "./plugins/gmail-connector",
+      "description": "Gmail API connector for reading, searching, sending, and managing emails via OAuth 2.0 MCP tools.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "gmail",
+        "email",
+        "google-api",
+        "oauth",
+        "mcp"
+      ],
+      "category": "productivity",
+      "tags": [
+        "email",
+        "gmail",
+        "connector"
+      ]
+    },
+    {
+      "name": "zoom-connector",
+      "source": "./plugins/zoom-connector",
+      "description": "Zoom API connector for scheduling, managing, and listing meetings via OAuth 2.0 MCP tools.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "zoom",
+        "meetings",
+        "video",
+        "oauth",
+        "mcp"
+      ],
+      "category": "productivity",
+      "tags": [
+        "meetings",
+        "zoom",
+        "connector"
+      ]
+    },
+    {
+      "name": "teams-connector",
+      "source": "./plugins/teams-connector",
+      "description": "Microsoft Teams connector for messaging, channels, calendar, and user management via Microsoft Graph API.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "teams",
+        "microsoft-graph",
+        "messaging",
+        "oauth",
+        "mcp"
+      ],
+      "category": "productivity",
+      "tags": [
+        "teams",
+        "messaging",
+        "connector"
+      ]
+    },
+    {
+      "name": "calendar-connector",
+      "source": "./plugins/calendar-connector",
+      "description": "Google Calendar API connector for scheduling, event management, and free/busy queries via OAuth 2.0 MCP tools.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "calendar",
+        "google-calendar",
+        "scheduling",
+        "oauth",
+        "mcp"
+      ],
+      "category": "productivity",
+      "tags": [
+        "calendar",
+        "scheduling",
+        "connector"
+      ]
     }
   ]
 }

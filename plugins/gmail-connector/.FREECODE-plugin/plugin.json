@@ -1,0 +1,57 @@
+{
+  "name": "freecode-gmail-connector",
+  "version": "1.0.0",
+  "description": "Full Gmail API connector — read, search, compose, send, label, and manage threads via the Gmail REST API. Zero browser automation required. Uses OAuth 2.0 with local token storage.",
+  "author": {
+    "name": "FreeCode",
+    "email": "support@freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["gmail", "email", "oauth", "connector", "api", "inbox"],
+  "category": "connectors",
+  "tags": ["email", "gmail", "productivity", "connector"],
+  "user_config": {
+    "GMAIL_PROJECT_ID": {
+      "description": "Google Cloud Project ID for OAuth 2.0",
+      "required": true,
+      "secret": false
+    },
+    "GMAIL_CLIENT_ID": {
+      "description": "OAuth 2.0 Client ID from Google Cloud Console",
+      "required": true,
+      "secret": true
+    },
+    "GMAIL_CLIENT_SECRET": {
+      "description": "OAuth 2.0 Client Secret from Google Cloud Console",
+      "required": true,
+      "secret": true
+    },
+    "GMAIL_REDIRECT_URI": {
+      "description": "OAuth redirect URI (default: http://localhost:41122)",
+      "required": false,
+      "secret": false,
+      "default": "http://localhost:41122"
+    },
+    "GMAIL_TOKEN_FILE": {
+      "description": "Path to stored OAuth token (default: ~/.freecode/.gmail-token.json)",
+      "required": false,
+      "secret": false,
+      "default": "~/.freecode/.gmail-token.json"
+    }
+  },
+  "mcpServers": {
+    "gmail-api": {
+      "command": "node",
+      "args": ["${FREECODE_PLUGIN_ROOT}/mcp/gmail-server.js"],
+      "env": {
+        "GMAIL_PROJECT_ID": "${FREECODE_PLUGIN_OPTION_GMAIL_PROJECT_ID}",
+        "GMAIL_CLIENT_ID": "${FREECODE_PLUGIN_OPTION_GMAIL_CLIENT_ID}",
+        "GMAIL_CLIENT_SECRET": "${FREECODE_PLUGIN_OPTION_GMAIL_CLIENT_SECRET}",
+        "GMAIL_REDIRECT_URI": "${FREECODE_PLUGIN_OPTION_GMAIL_REDIRECT_URI}",
+        "GMAIL_TOKEN_FILE": "${FREECODE_PLUGIN_OPTION_GMAIL_TOKEN_FILE}"
+      }
+    }
+  },
+  "hooks": "./hooks/hooks.json"
+}
