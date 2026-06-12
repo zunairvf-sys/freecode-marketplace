@@ -1,14 +1,10 @@
 {
   "name": "calendar-connector",
   "version": "1.0.1",
-  "type": "module",
-  "description": "Google Calendar API MCP connector for FreeCode",
+  "description": "Zero-dependency Google Calendar API MCP connector for FreeCode",
   "main": "mcp/calendar-server.js",
   "scripts": {
     "start": "node mcp/calendar-server.js"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "engines": {
     "node": ">=18"

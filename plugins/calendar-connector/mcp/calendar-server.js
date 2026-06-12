@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /**
- * Google Calendar MCP Server
+ * Google Calendar MCP Server (zero-dependency)
  *
  * Exposes calendar operations via MCP tools using the Google Calendar REST API.
  * OAuth 2.0 token management with automatic refresh.
+ *
+ * Uses raw JSON-RPC over stdio — no external npm dependencies required.
  *
  * Auth tools:
  *   - auth_calendar              Get OAuth authorization URL
@@ -20,13 +22,8 @@
  *   - calendar_insert_quick_event
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
-
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const fs = require("fs");
+const path = require("path");
 
 // --- Config ---
 const CLIENT_ID = process.env.CALENDAR_CLIENT_ID || "";
@@ -163,7 +160,6 @@ class CalendarClient {
       },
     });
     if (resp.status === 401) {
-      // Token may have expired - try refresh one more time
       if (this.tokens && this.tokens.refresh_token) {
         try {
           await this.refreshToken();
@@ -186,16 +182,18 @@ class CalendarClient {
   }
 }
 
-// --- Server ---
-const server = new McpServer({
-  name: "calendar-connector",
-  version: "1.0.0",
-});
+// --- Raw MCP JSON-RPC over stdio (no SDK needed) ---
+
 const calendar = new CalendarClient();
+
+const tools = [];
+function defTool(name, desc, params, handler) {
+  tools.push({ name, description: desc, inputSchema: { type: "object", properties: params, required: [] }, handler });
+}
 
 // --- Auth Tools ---
 
-server.tool(
+defTool(
   "auth_calendar",
   "Get the OAuth authorization URL for Google Calendar. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_calendar_exchange_code.",
   {},
@@ -212,7 +210,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "auth_calendar_exchange_code",
   "Exchange an OAuth authorization code for Google Calendar access tokens. Call this after completing the browser auth flow.",
   {
@@ -239,7 +237,7 @@ server.tool(
 );
 
 // calendar_list_calendars
-server.tool(
+defTool(
   "calendar_list_calendars",
   "List all calendars accessible by the user.",
   {},
@@ -267,7 +265,7 @@ server.tool(
 );
 
 // calendar_get_events
-server.tool(
+defTool(
   "calendar_get_events",
   "Get events from a calendar within a time range.",
   {
@@ -325,7 +323,7 @@ server.tool(
 );
 
 // calendar_create_event
-server.tool(
+defTool(
   "calendar_create_event",
   "Create a new event on the calendar.",
   {
@@ -404,7 +402,7 @@ server.tool(
 );
 
 // calendar_update_event
-server.tool(
+defTool(
   "calendar_update_event",
   "Update an existing event.",
   {
@@ -481,7 +479,7 @@ server.tool(
 );
 
 // calendar_delete_event
-server.tool(
+defTool(
   "calendar_delete_event",
   "Delete an event from the calendar.",
   {
@@ -514,7 +512,7 @@ server.tool(
 );
 
 // calendar_free_busy
-server.tool(
+defTool(
   "calendar_free_busy",
   "Check free/busy availability for a time range.",
   {
@@ -554,7 +552,7 @@ server.tool(
 );
 
 // calendar_get_event
-server.tool(
+defTool(
   "calendar_get_event",
   "Get details of a single event.",
   {
@@ -585,7 +583,7 @@ server.tool(
 );
 
 // calendar_insert_quick_event
-server.tool(
+defTool(
   "calendar_insert_quick_event",
   "Quick-add an event using natural language parsing.",
   {
@@ -629,14 +627,55 @@ server.tool(
   }
 );
 
-// --- Start server ---
-async function runServer() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("Google Calendar MCP server running on stdio");
+// --- MCP JSON-RPC server ---
+
+function write(msg) { process.stdout.write(JSON.stringify(msg) + "\n"); }
+
+async function handleRequest(msg) {
+  const id = msg.id;
+
+  if (msg.method === "initialize") {
+    return { jsonrpc: "2.0", id, result: { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "calendar-api-connector", version: "1.0.1" } } };
+  }
+
+  if (msg.method === "notifications/initialized") {
+    return null;
+  }
+
+  if (msg.method === "tools/list") {
+    return {
+      jsonrpc: "2.0", id,
+      result: { tools: tools.map(t => ({ name: t.name, description: t.description, inputSchema: t.inputSchema })) },
+    };
+  }
+
+  if (msg.method === "tools/call") {
+    const tool = tools.find(t => t.name === msg.params?.name);
+    if (!tool) return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown tool: ${msg.params?.name}` } };
+    try {
+      const result = await tool.handler(msg.params || {});
+      return { jsonrpc: "2.0", id, result };
+    } catch (e) {
+      return { jsonrpc: "2.0", id, result: { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true } };
+    }
+  }
+
+  return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown method: ${msg.method}` } };
 }
 
-runServer().catch((e) => {
-  console.error("Server failed:", e);
-  process.exit(1);
+// Read stdin line by line
+const readline = require("readline");
+const rl = readline.createInterface({ input: process.stdin });
+
+rl.on("line", async (line) => {
+  if (!line.trim()) return;
+  try {
+    const msg = JSON.parse(line);
+    const response = await handleRequest(msg);
+    if (response) write(response);
+  } catch (e) {
+    console.error("MCP error:", e.message);
+  }
 });
+
+console.error("Google Calendar MCP server running on stdio");

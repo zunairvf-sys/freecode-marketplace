@@ -1,60 +1,45 @@
 /**
- * Gmail MCP Server - API-based Gmail integration
+ * Gmail MCP Server - API-based Gmail integration (zero-dependency)
  *
- * Provides tools for reading, searching, composing, sending, and labeling emails
- * via the Gmail REST API. Uses OAuth 2.0 with token persistence.
+ * Uses raw JSON-RPC over stdio — no external npm dependencies required.
  *
  * Tools exposed:
  *   - auth_gmail                 Get OAuth authorization URL
  *   - auth_gmail_exchange_code   Exchange authorization code for tokens
- *   - gmail_read_inbox         List recent messages with filters
- *   - gmail_read_message       Read a full message by ID
- *   - gmail_search_messages    Search messages by query
- *   - gmail_compose_draft      Create a draft email
- *   - gmail_send_message       Send an email immediately
- *   - gmail_reply_to_thread    Reply to an existing thread
- *   - gmail_add_labels         Add labels to messages
- *   - gmail_get_labels         List all labels
- *   - gmail_delete_message     Move a message to trash
- *   - gmail_mark_as_read       Mark messages as read/unread
- *   - gmail_thread_history     Get full thread conversation
- *   - gmail_send_html          Send HTML-formatted email
- *
- * Setup:
- *   1. Create project at https://console.cloud.google.com
- *   2. Enable Gmail API
- *   3. Create OAuth 2.0 credentials (Desktop app type)
- *   4. Download client_secret.json or copy Client ID + Secret
- *   5. Install plugin via marketplace: freecode plugin install freecode-gmail-connector
- *   6. Call auth_gmail tool to begin OAuth flow
+ *   - gmail_read_inbox           List recent messages
+ *   - gmail_read_message         Read a full message by ID
+ *   - gmail_search_messages      Search messages by query
+ *   - gmail_compose_draft        Create a draft email
+ *   - gmail_send_message         Send an email immediately
+ *   - gmail_reply_to_thread      Reply to an existing thread
+ *   - gmail_add_labels           Add labels to messages
+ *   - gmail_get_labels           List all labels
+ *   - gmail_delete_message       Move a message to trash
+ *   - gmail_mark_as_read         Mark messages as read/unread
+ *   - gmail_thread_history       Get full thread conversation
+ *   - gmail_send_html            Send HTML-formatted email
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { readFile, writeFile, existsSync } from "fs";
-import { promisify } from "util";
+const { readFile, writeFile } = require("fs");
+const { promisify } = require("util");
 
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
 
-// --- OAuth Token Management ---
+// --- Token helpers ---
 
-async function getToken() {
-  const tokenFile = process.env.GMAIL_TOKEN_FILE || "~/.freecode/.gmail-token.json";
-  const resolvedPath = tokenFile.startsWith("~") ? process.env.HOME + tokenFile.slice(1) : tokenFile;
-
-  try {
-    const data = await readFileAsync(resolvedPath, "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return null;
-  }
+function getTokenPath() {
+  const p = process.env.GMAIL_TOKEN_FILE || "~/.freecode/.gmail-token.json";
+  return p.startsWith("~") ? (process.env.HOME || process.env.USERPROFILE || "") + p.slice(1) : p;
 }
 
-async function saveToken(token) {
-  const tokenFile = process.env.GMAIL_TOKEN_FILE || "~/.freecode/.gmail-token.json";
-  const resolvedPath = tokenFile.startsWith("~") ? process.env.HOME + tokenFile.slice(1) : tokenFile;
-  await writeFileAsync(resolvedPath, JSON.stringify(token, null, 2));
+async function getToken() {
+  try { return JSON.parse(await readFileAsync(getTokenPath(), "utf-8")); }
+  catch { return null; }
+}
+
+async function saveToken(t) {
+  await writeFileAsync(getTokenPath(), JSON.stringify(t, null, 2));
 }
 
 // --- Gmail API Client ---
@@ -84,30 +69,22 @@ class GmailClient {
     const scope = encodeURIComponent(
       "https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.send"
     );
-    return (
-      `https://accounts.google.com/o/oauth2/v2/auth` +
-      `?client_id=${this.clientId}` +
-      `&redirect_uri=${encodeURIComponent(this.redirectUri)}` +
-      `&scope=${scope}` +
-      `&response_type=code` +
-      `&access_type=offline` +
-      `&prompt=consent`
-    );
+    return [
+      `https://accounts.google.com/o/oauth2/v2/auth`,
+      `?client_id=${this.clientId}`,
+      `&redirect_uri=${encodeURIComponent(this.redirectUri)}`,
+      `&scope=${scope}`,
+      `&response_type=code`,
+      `&access_type=offline`,
+      `&prompt=consent`,
+    ].join("");
   }
 
   async exchangeCode(code) {
-    const response = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        code,
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        redirect_uri: this.redirectUri,
-        grant_type: "authorization_code",
-      }),
-    });
-    const data = await response.json();
+    const data = await this._postJson("https://oauth2.googleapis.com/token", new URLSearchParams({
+      code, client_id: this.clientId, client_secret: this.clientSecret,
+      redirect_uri: this.redirectUri, grant_type: "authorization_code",
+    }));
     if (data.access_token) {
       data.expiry_time = Date.now() / 1000 + (data.expires_in || 3600);
       this.token = data;
@@ -118,25 +95,26 @@ class GmailClient {
   }
 
   async refreshAccessToken() {
-    const response = await fetch("https://oauth2.googleapis.com/token", {
+    const t = await this._postJson("https://oauth2.googleapis.com/token", new URLSearchParams({
+      client_id: this.clientId, client_secret: this.clientSecret,
+      grant_type: "refresh_token", refresh_token: this.token.refresh_token,
+    }));
+    t.expiry_time = Date.now() / 1000 + t.expires_in;
+    t.refresh_token = this.token.refresh_token;
+    await saveToken(t);
+    this.token = t;
+  }
+
+  async _postJson(url, body) {
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
-        grant_type: "refresh_token",
-        refresh_token: this.token.refresh_token,
-      }),
+      body: typeof body === "string" ? body : new URLSearchParams(body),
     });
-    const newToken = await response.json();
-    newToken.expiry_time = Date.now() / 1000 + newToken.expires_in;
-    newToken.refresh_token = this.token.refresh_token;
-    await saveToken(newToken);
-    this.token = newToken;
+    return res.json();
   }
 
   async request(method, path, body) {
-    const url = `${this.baseUrl}${path}`;
     const opts = {
       method,
       headers: {
@@ -144,472 +122,223 @@ class GmailClient {
         "Content-Type": "application/json",
       },
     };
-    if (body) {
-      opts.body = JSON.stringify(body);
-    }
-    const res = await fetch(url, opts);
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`Gmail API ${res.status}: ${err}`);
-    }
+    if (body) opts.body = JSON.stringify(body);
+    const res = await fetch(`${this.baseUrl}${path}`, opts);
+    if (!res.ok) throw new Error(`Gmail API ${res.status}: ${await res.text()}`);
     return res.json();
   }
 
-  // --- Inbox operations ---
-
-  async listMessages(params = {}) {
-    const qs = new URLSearchParams({
-      maxResults: params.maxResults || "20",
-      q: params.query || "",
-      includeSpamTrash: params.includeSpamTrash || "false",
-    });
+  async listMessages({ maxResults = "20", query } = {}) {
+    const qs = new URLSearchParams({ maxResults, q: query || "", includeSpamTrash: "false" });
     const data = await this.request("GET", `/users/me/messages?${qs}`);
     return data.messages || [];
   }
 
-  async getMessage(id) {
-    return this.request("GET", `/users/me/messages/${id}`);
-  }
+  getMessage(id) { return this.request("GET", `/users/me/messages/${id}`); }
+  sendMessage(uid, raw) { return this.request("POST", `/users/${uid}/messages/send`, { raw }); }
+  createDraft(uid, msg) { return this.request("POST", `/users/${uid}/drafts`, { message: msg }); }
+  modifyMessage(id, body) { return this.request("PUT", `/users/me/messages/${id}/modify`, body); }
+  deleteMessage(id) { return this.request("DELETE", `/users/me/messages/${id}`); }
+  listLabels() { return this.request("GET", `/users/me/labels`); }
+  getThread(id) { return this.request("GET", `/users/me/threads/${id}`); }
 
-  async sendMessage(userId, raw) {
-    return this.request("POST", `/users/${userId}/messages/send`, { raw });
-  }
-
-  async createDraft(userId, message) {
-    return this.request("POST", `/users/${userId}/drafts`, { message });
-  }
-
-  async modifyMessage(id, body) {
-    return this.request("PUT", `/users/me/messages/${id}/modify`, body);
-  }
-
-  async deleteMessage(id) {
-    return this.request("DELETE", `/users/me/messages/${id}`);
-  }
-
-  async listLabels() {
-    return this.request("GET", `/users/me/labels`);
-  }
-
-  async labelMessage(id, addLabels = [], removeLabels = []) {
+  labelMessage(id, add = [], remove = []) {
     const body = {};
-    if (addLabels.length) body.addLabelIds = addLabels;
-    if (removeLabels.length) body.removeLabelIds = removeLabels;
+    if (add.length) body.addLabelIds = add;
+    if (remove.length) body.removeLabelIds = remove;
     return this.request("PUT", `/users/me/messages/${id}/modify`, body);
   }
-
-  async getThread(threadId) {
-    return this.request("GET", `/users/me/threads/${threadId}`);
-  }
 }
 
-// --- Encode/Decode Helpers ---
+// --- MIME helpers ---
 
-function encodeMimeMessage(from, to, subject, body, html = false, replyTo = null, cc = null) {
-  const boundaries = ["----=_Part_0", "----=_Part_1", "----=_Part_2", "----=_Boundary_"];
-  let mime = "";
-
-  mime += `From: ${from}\r\n`;
-  mime += `To: ${Array.isArray(to) ? to.join(", ") : to}\r\n`;
-  if (cc) mime += `Cc: ${cc}\r\n`;
-  if (replyTo) mime += `Reply-To: ${replyTo}\r\n`;
-  mime += `Subject: ${subject}\r\n`;
-  mime += "MIME-Version: 1.0\r\n";
-
+function encodeMime(from, to, subject, body, html, replyTo, cc) {
+  const b = "----=_Part_0";
+  let m = `From: ${from}\r\nTo: ${Array.isArray(to) ? to.join(", ") : to}\r\n`;
+  if (cc) m += `Cc: ${cc}\r\n`;
+  if (replyTo) m += `Reply-To: ${replyTo}\r\n`;
+  m += `Subject: ${subject}\r\nMIME-Version: 1.0\r\n`;
   if (html) {
-    mime += `Content-Type: multipart/alternative; boundary="${boundaries[0]}"\r\n`;
-    mime += `\r\n--${boundaries[0]}\r\n`;
-    mime += `Content-Type: text/plain; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n`;
-    mime += body.replace(/<[^>]*>/g, "") + "\r\n";
-    mime += `\r\n--${boundaries[0]}\r\n`;
-    mime += `Content-Type: text/html; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n`;
-    mime += body + "\r\n";
-    mime += `\r\n--${boundaries[0]}--\r\n`;
+    m += `Content-Type: multipart/alternative; boundary="${b}"\r\n\r\n`;
+    m += `--${b}\r\nContent-Type: text/plain; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n${body.replace(/<[^>]*>/g, "")}\r\n`;
+    m += `--${b}\r\nContent-Type: text/html; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n${body}\r\n--${b}--\r\n`;
   } else {
-    mime += 'Content-Type: text/plain; charset="UTF-8"\r\n';
-    mime += "Content-Transfer-Encoding: 7bit\r\n";
-    mime += `\r\n${body}\r\n`;
+    m += `Content-Type: text/plain; charset="UTF-8"\r\nContent-Transfer-Encoding: 7bit\r\n\r\n${body}\r\n`;
   }
-
-  const encoded = Buffer.from(mime).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
-  return encoded;
+  return Buffer.from(m).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
-function decodeMimeMessage(raw) {
-  const decoded = Buffer.from(
-    raw.replace(/-/g, "+").replace(/_/g, "/").replace(/=/g, ""),
+function decodeMime(raw) {
+  const dec = Buffer.from(
+    (raw || "").replace(/-/g, "+").replace(/_/g, "/").replace(/=/g, ""),
     "base64"
   ).toString("utf-8");
-
-  const headers = {};
-  const headerEnd = decoded.indexOf("\r\n\r\n");
-  if (headerEnd > -1) {
-    decoded.slice(0, headerEnd).split("\r\n").forEach(line => {
-      const colonIdx = line.indexOf(":");
-      if (colonIdx > -1) {
-        headers[line.slice(0, colonIdx).toLowerCase()] = line.slice(colonIdx + 2);
-      }
+  const hdrs = {};
+  const ie = dec.indexOf("\r\n\r\n");
+  if (ie > -1) {
+    dec.slice(0, ie).split("\r\n").forEach(l => {
+      const c = l.indexOf(":");
+      if (c > -1) hdrs[l.slice(0, c).toLowerCase()] = l.slice(c + 2);
     });
   }
-
-  return {
-    headers,
-    subject: headers.subject || "",
-    from: headers.from || "",
-    to: headers.to || "",
-    date: headers.date || "",
-    body: decoded.slice(headerEnd + 4),
-  };
+  return { headers: hdrs, subject: hdrs.subject || "", from: hdrs.from || "", to: hdrs.to || "", date: hdrs.date || "", body: dec.slice(ie + 4) };
 }
 
-// --- MCP Server Setup ---
+// --- Raw MCP JSON-RPC over stdio (no SDK needed) ---
 
 const gmail = new GmailClient();
-const server = new McpServer({
-  name: "gmail-api-connector",
-  version: "1.0.0",
+let _reqId = 0;
+
+// Tool definitions: [name, description, {params}, handler]
+const tools = [];
+
+function defTool(name, desc, params, handler) {
+  tools.push({ name, description: desc, inputSchema: { type: "object", properties: params, required: [] }, handler });
+}
+
+const unauth = { content: [{ type: "text", text: "Not authenticated with Gmail. Call auth_gmail to get the authorization URL, complete the browser flow, then call auth_gmail_exchange_code with the code." }], isError: true };
+
+defTool("auth_gmail", "Get the OAuth authorization URL for Gmail. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_gmail_exchange_code.", {}, async () => {
+  return { content: [{ type: "text", text: `Open this URL in your browser to authorize Gmail access:\n\n${gmail.getAuthUrl()}\n\nAfter authorizing, copy the 'code' parameter from the redirect URL and pass it to auth_gmail_exchange_code.` }] };
 });
 
-// --- Auth Tools ---
+defTool("auth_gmail_exchange_code", "Exchange an OAuth authorization code for Gmail access tokens.", { code: { type: "string", description: "Authorization code from redirect URL" } }, async ({ code }) => {
+  try {
+    await gmail.exchangeCode(code.trim());
+    return { content: [{ type: "text", text: "Gmail authentication successful! Token saved." }] };
+  } catch (e) {
+    return { content: [{ type: "text", text: `Auth failed: ${e.message}` }], isError: true };
+  }
+});
 
-server.tool(
-  "auth_gmail",
-  "Get the OAuth authorization URL for Gmail. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_gmail_exchange_code.",
-  {},
-  async () => {
-    const authUrl = gmail.getAuthUrl();
+defTool("gmail_read_inbox", "List recent messages in your inbox.", { maxResults: { type: "string", description: "Max messages (default 20)" }, query: { type: "string", description: "Search query" } }, async ({ maxResults, query }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const msgs = await gmail.listMessages({ maxResults, query: query || undefined });
+  return { content: [{ type: "text", text: `Found ${msgs.length} messages.\n${msgs.slice(0, 10).map((m, i) => `${i + 1}. ID: ${m.id} | Thread: ${m.threadId} | ${m.snippet || ""}`).join("\n")}` }] };
+});
+
+defTool("gmail_read_message", "Read a full email by message ID.", { messageId: { type: "string", description: "Gmail message ID" } }, async ({ messageId }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const msg = await gmail.getMessage(messageId);
+  const d = decodeMime(msg.payload?.parts?.find(p => p.mimeType === "text/plain")?.body?.data || msg.payload?.body?.data || "");
+  return { content: [{ type: "text", text: `From: ${d.from}\nTo: ${d.to}\nDate: ${d.date}\nSubject: ${d.subject}\n\n${d.body}` }] };
+});
+
+defTool("gmail_search_messages", 'Search messages (from:, to:, subject:, has:attachment, is:unread, etc.).', { query: { type: "string", description: "Gmail search query" }, maxResults: { type: "string", description: "Max results" } }, async ({ query, maxResults }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const msgs = await gmail.listMessages({ maxResults, query });
+  const results = await Promise.all(msgs.slice(0, 10).map(async m => { const f = await gmail.getMessage(m.id); return { id: m.id, snippet: m.snippet, labels: f.labelIds }; }));
+  return { content: [{ type: "text", text: `Search results for "${query}":\n${JSON.stringify(results, null, 2)}` }] };
+});
+
+defTool("gmail_send_message", "Send an email immediately.", { to: { type: "string", description: "Recipient(s)" }, subject: { type: "string", description: "Subject" }, body: { type: "string", description: "Body" }, html: { type: "boolean", description: "HTML body?" }, cc: { type: "string", description: "CC" }, replyTo: { type: "string", description: "Reply-To" } }, async ({ to, subject, body, html, cc, replyTo }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const raw = encodeMime(process.env.GMAIL_FROM_ADDRESS || "me", to, subject, body, html, replyTo, cc);
+  const s = await gmail.sendMessage("me", raw);
+  return { content: [{ type: "text", text: `Email sent. ID: ${s.id} Thread: ${s.threadId}` }] };
+});
+
+defTool("gmail_compose_draft", "Create a draft email without sending.", { to: { type: "string", description: "Recipient(s)" }, subject: { type: "string", description: "Subject" }, body: { type: "string", description: "Body" }, html: { type: "boolean", description: "HTML body?" } }, async ({ to, subject, body, html }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const draft = await gmail.createDraft("me", { raw: encodeMime("", to, subject, body, html) });
+  return { content: [{ type: "text", text: `Draft created. ID: ${draft.id}` }] };
+});
+
+defTool("gmail_reply_to_thread", "Reply to an email thread.", { threadId: { type: "string", description: "Thread ID" }, body: { type: "string", description: "Reply text" } }, async ({ threadId, body }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const t = await gmail.getThread(threadId);
+  const d = decodeMime(t.messages[t.messages.length - 1].payload.body.data || "");
+  const s = await gmail.sendMessage("me", encodeMime("", d.from, `Re: ${d.subject}`, body));
+  return { content: [{ type: "text", text: `Reply sent. ID: ${s.id}` }] };
+});
+
+defTool("gmail_get_labels", "List all Gmail labels.", {}, async () => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const l = await gmail.listLabels();
+  return { content: [{ type: "text", text: `Labels (${(l.labels || []).length}):\n${(l.labels || []).map(x => `  ${x.id} - ${x.name} (${x.messageCount} msgs)`).join("\n")}` }] };
+});
+
+defTool("gmail_add_labels", "Add or remove labels from a message.", { messageId: { type: "string", description: "Message ID" }, addLabels: { type: "string", description: "Comma-separated labels to add" }, removeLabels: { type: "string", description: "Comma-separated labels to remove" } }, async ({ messageId, addLabels, removeLabels }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  await gmail.labelMessage(messageId, addLabels ? addLabels.split(",").map(s => s.trim()) : [], removeLabels ? removeLabels.split(",").map(s => s.trim()) : []);
+  return { content: [{ type: "text", text: `Labels updated for ${messageId}.` }] };
+});
+
+defTool("gmail_delete_message", "Move a message to Trash.", { messageId: { type: "string", description: "Message ID" } }, async ({ messageId }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  await gmail.deleteMessage(messageId);
+  return { content: [{ type: "text", text: `Message ${messageId} trashed.` }] };
+});
+
+defTool("gmail_mark_as_read", "Mark a message as read or unread.", { messageId: { type: "string", description: "Message ID" }, markRead: { type: "boolean", description: "true=read, false=unread" } }, async ({ messageId, markRead }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const body = markRead ? { removeLabelIds: ["UNREAD"] } : { addLabelIds: ["UNREAD"] };
+  await gmail.modifyMessage(messageId, body);
+  return { content: [{ type: "text", text: `Message ${messageId} marked as ${markRead ? "read" : "unread"}.` }] };
+});
+
+defTool("gmail_thread_history", "Get full conversation thread.", { threadId: { type: "string", description: "Thread ID" } }, async ({ threadId }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const t = await gmail.getThread(threadId);
+  const summary = (t.messages || []).map((m, i) => { const d = decodeMime(m.payload.body.data || ""); return `${i + 1}. [${d.date}] ${d.from}: ${d.subject}`; }).join("\n");
+  return { content: [{ type: "text", text: `Thread ${threadId} (${(t.messages || []).length} msgs):\n${summary}` }] };
+});
+
+defTool("gmail_send_html", "Send an HTML-formatted email.", { to: { type: "string", description: "Recipient(s)" }, subject: { type: "string", description: "Subject" }, htmlBody: { type: "string", description: "HTML content" }, cc: { type: "string", description: "CC" } }, async ({ to, subject, htmlBody, cc }) => {
+  if (!(await gmail.ensureAuthenticated())) return unauth;
+  const s = await gmail.sendMessage("me", encodeMime("", to, subject, htmlBody, true, null, cc));
+  return { content: [{ type: "text", text: `HTML email sent. ID: ${s.id}` }] };
+});
+
+// --- MCP JSON-RPC server ---
+
+function write(msg) { process.stdout.write(JSON.stringify(msg) + "\n"); }
+
+async function handleRequest(msg) {
+  const id = msg.id;
+
+  if (msg.method === "initialize") {
+    return { jsonrpc: "2.0", id, result: { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "gmail-api-connector", version: "1.0.1" } } };
+  }
+
+  if (msg.method === "notifications/initialized") {
+    return null;
+  }
+
+  if (msg.method === "tools/list") {
     return {
-      content: [
-        {
-          type: "text",
-          text: `Open this URL in your browser to authorize Gmail access:\n\n${authUrl}\n\nAfter authorizing, you will be redirected to a URL containing a 'code' parameter. Copy that code and pass it to the auth_gmail_exchange_code tool.`,
-        },
-      ],
+      jsonrpc: "2.0", id,
+      result: { tools: tools.map(t => ({ name: t.name, description: t.description, inputSchema: t.inputSchema })) },
     };
   }
-);
 
-server.tool(
-  "auth_gmail_exchange_code",
-  "Exchange an OAuth authorization code for Gmail access tokens. Call this after completing the browser auth flow.",
-  {
-    code: { type: "string", description: "The authorization code from the redirect URL" },
-  },
-  async ({ code }) => {
+  if (msg.method === "tools/call") {
+    const tool = tools.find(t => t.name === msg.params?.name);
+    if (!tool) return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown tool: ${msg.params?.name}` } };
     try {
-      await gmail.exchangeCode(code.trim());
-      return {
-        content: [
-          {
-            type: "text",
-            text: "Gmail authentication successful! Token saved. You can now use Gmail tools.",
-          },
-        ],
-      };
+      const result = await tool.handler(msg.params || {});
+      return { jsonrpc: "2.0", id, result };
     } catch (e) {
-      return {
-        content: [{ type: "text", text: `Auth failed: ${e.message}` }],
-        isError: true,
-      };
+      return { jsonrpc: "2.0", id, result: { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true } };
     }
   }
-);
 
-// --- Gmail Tools ---
+  return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown method: ${msg.method}` } };
+}
 
-const unauthMsg = {
-  content: [{ type: "text", text: "Not authenticated with Gmail. Call auth_gmail to get the authorization URL, complete the browser flow, then call auth_gmail_exchange_code with the code." }],
-  isError: true,
-};
+// Read stdin line by line
+const readline = require("readline");
+const rl = readline.createInterface({ input: process.stdin });
 
-server.tool(
-  "gmail_read_inbox",
-  "List recent messages in your inbox. Supports filtering by sender, recipient, subject, and labels.",
-  {
-    maxResults: { type: "string", description: "Max messages to return (default: 20)", default: "20" },
-    query: { type: "string", description: 'Search query (e.g., "from:alice@example.com is:unread")' },
-  },
-  async ({ maxResults, query }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const messages = await gmail.listMessages({ maxResults, query: query || undefined });
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Found ${messages.length} messages.\n${messages
-            .slice(0, 10)
-            .map((m, i) => `${i + 1}. ID: ${m.id} | Thread: ${m.threadId} | Snippet: ${m.snippet || "N/A"}`)
-            .join("\n")}`,
-        },
-      ],
-    };
+rl.on("line", async (line) => {
+  if (!line.trim()) return;
+  try {
+    const msg = JSON.parse(line);
+    const response = await handleRequest(msg);
+    if (response) write(response);
+  } catch (e) {
+    console.error("MCP error:", e.message);
   }
-);
+});
 
-server.tool(
-  "gmail_read_message",
-  "Read a full email message by its ID. Returns headers, body, and snippet.",
-  {
-    messageId: { type: "string", description: "The Gmail message ID to read" },
-  },
-  async ({ messageId }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const msg = await gmail.getMessage(messageId, { format: "full" });
-    const decoded = decodeMimeMessage(msg.payload.parts?.find(p => p.mimeType === "text/plain")?.body?.data || msg.payload.body.data || "");
-    return {
-      content: [
-        {
-          type: "text",
-          text: `From: ${decoded.from}\nTo: ${decoded.to}\nDate: ${decoded.date}\nSubject: ${decoded.subject}\n\n${decoded.body}`,
-        },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_search_messages",
-  "Search messages using Gmail query syntax. Supports operators: from:, to:, subject:, has:attachment, older:, newer:, is:unread, etc.",
-  {
-    query: { type: "string", description: 'Gmail search query (e.g., "from:boss@company.com has:attachment newer:2024/01/01")' },
-    maxResults: { type: "string", description: "Max results (default: 20)", default: "20" },
-  },
-  async ({ query, maxResults }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const messages = await gmail.listMessages({ maxResults, query });
-    const results = await Promise.all(
-      messages.slice(0, 10).map(async m => {
-        const full = await gmail.getMessage(m.id);
-        return { id: m.id, snippet: m.snippet, labels: full.labelIds };
-      })
-    );
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Search results for "${query}":\n${JSON.stringify(results, null, 2)}`,
-        },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_send_message",
-  "Send an email immediately via the Gmail API. Plain text or HTML.",
-  {
-    to: { type: "string", description: "Recipient email address(es), comma-separated for multiple" },
-    subject: { type: "string", description: "Email subject line" },
-    body: { type: "string", description: "Email body content" },
-    html: { type: "boolean", description: "Set to true for HTML body", default: false },
-    cc: { type: "string", description: "CC recipients (optional)" },
-    replyTo: { type: "string", description: "Reply-To address (optional)" },
-  },
-  async ({ to, subject, body, html, cc, replyTo }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const fromAddress = process.env.GMAIL_FROM_ADDRESS || "";
-    const raw = encodeMimeMessage(fromAddress || "me", to, subject, body, html || false, replyTo || null, cc || null);
-    const sent = await gmail.sendMessage("me", raw);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Email sent successfully.\nMessage ID: ${sent.id}\nThread ID: ${sent.threadId}`,
-        },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_compose_draft",
-  "Create a draft email without sending it. Useful for review before sending.",
-  {
-    to: { type: "string", description: "Recipient email address(es)" },
-    subject: { type: "string", description: "Draft subject line" },
-    body: { type: "string", description: "Draft body content" },
-    html: { type: "boolean", description: "Set to true for HTML body", default: false },
-  },
-  async ({ to, subject, body, html }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const raw = encodeMimeMessage("", to, subject, body, html || false);
-    const message = { raw };
-    const draft = await gmail.createDraft("me", message);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Draft created successfully.\nDraft ID: ${draft.id}\nMessage ID: ${draft.message?.id}`,
-        },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_reply_to_thread",
-  "Reply to an existing email thread by thread ID.",
-  {
-    threadId: { type: "string", description: "The Gmail thread ID to reply to" },
-    body: { type: "string", description: "Reply body text" },
-  },
-  async ({ threadId, body }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const thread = await gmail.getThread(threadId);
-    const lastMsg = thread.messages[thread.messages.length - 1];
-    const decoded = decodeMimeMessage(lastMsg.payload.body.data || "");
-    const raw = encodeMimeMessage("", decoded.from, `Re: ${decoded.subject}`, body);
-    const sent = await gmail.sendMessage("me", raw);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Reply sent to thread ${threadId}.\nMessage ID: ${sent.id}`,
-        },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_get_labels",
-  "List all labels in your Gmail account.",
-  {},
-  async () => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const labels = await gmail.listLabels();
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Labels (${labels.labels?.length || 0}):\n${(labels.labels || [])
-            .map(l => `  ${l.id} - ${l.name} (messages: ${l.messageCount})`)
-            .join("\n")}`,
-        },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_add_labels",
-  "Add or remove labels from a message.",
-  {
-    messageId: { type: "string", description: "The message ID to label" },
-    addLabels: { type: "string", description: "Comma-separated label names to add" },
-    removeLabels: { type: "string", description: "Comma-separated label names to remove" },
-  },
-  async ({ messageId, addLabels, removeLabels }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    await gmail.labelMessage(
-      messageId,
-      addLabels ? addLabels.split(",").map(s => s.trim()) : [],
-      removeLabels ? removeLabels.split(",").map(s => s.trim()) : []
-    );
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Labels updated for message ${messageId}.`,
-        },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_delete_message",
-  "Permanently delete a message (move to Trash).",
-  {
-    messageId: { type: "string", description: "The message ID to delete" },
-  },
-  async ({ messageId }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    await gmail.deleteMessage(messageId);
-    return {
-      content: [
-        { type: "text", text: `Message ${messageId} moved to Trash.` },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_mark_as_read",
-  "Mark messages as read or unread.",
-  {
-    messageId: { type: "string", description: "The message ID to mark" },
-    markRead: { type: "boolean", description: "true to mark as read, false to mark as unread", default: true },
-  },
-  async ({ messageId, markRead }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const body = markRead
-      ? { removeLabelIds: ["UNREAD"] }
-      : { addLabelIds: ["UNREAD"] };
-    await gmail.modifyMessage(messageId, body);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Message ${messageId} marked as ${markRead ? "read" : "unread"}.`,
-        },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_thread_history",
-  "Get the full conversation thread for a given thread ID.",
-  {
-    threadId: { type: "string", description: "The Gmail thread ID" },
-  },
-  async ({ threadId }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const thread = await gmail.getThread(threadId);
-    const messages = thread.messages || [];
-    const summary = messages
-      .map((m, i) => {
-        const decoded = decodeMimeMessage(m.payload.body.data || "");
-        return `${i + 1}. [${decoded.date}] ${decoded.from}: ${decoded.subject}`;
-      })
-      .join("\n");
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Thread ${threadId} (${messages.length} messages):\n${summary}`,
-        },
-      ],
-    };
-  }
-);
-
-server.tool(
-  "gmail_send_html",
-  "Send an HTML-formatted email. Supports inline styles, tables, and embedded content.",
-  {
-    to: { type: "string", description: "Recipient email address(es)" },
-    subject: { type: "string", description: "Email subject" },
-    htmlBody: { type: "string", description: "HTML content for the email body" },
-    cc: { type: "string", description: "CC recipients (optional)" },
-  },
-  async ({ to, subject, htmlBody, cc }) => {
-    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
-    const raw = encodeMimeMessage("", to, subject, htmlBody, true, null, cc || null);
-    const sent = await gmail.sendMessage("me", raw);
-    return {
-      content: [
-        {
-          type: "text",
-          text: `HTML email sent successfully.\nMessage ID: ${sent.id}`,
-        },
-      ],
-    };
-  }
-);
-
-// Start the server
-const transport = new StdioServerTransport();
-await server.connect(transport);
 console.error("Gmail MCP server running on stdio");

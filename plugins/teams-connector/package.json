@@ -1,14 +1,10 @@
 {
   "name": "teams-connector",
   "version": "1.0.1",
-  "type": "module",
-  "description": "Microsoft Teams API MCP connector for FreeCode",
+  "description": "Zero-dependency Microsoft Teams API MCP connector for FreeCode",
   "main": "mcp/teams-server.js",
   "scripts": {
     "start": "node mcp/teams-server.js"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.29.0"
   },
   "engines": {
     "node": ">=18"

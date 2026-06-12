@@ -1,9 +1,11 @@
 /**
- * Microsoft Teams MCP Server - API-based Teams integration
+ * Microsoft Teams MCP Server - API-based Teams integration (zero-dependency)
  *
  * Provides tools for reading/sending messages, managing channels,
  * viewing calendar events, and handling tasks via Microsoft Graph API.
  * Uses OAuth 2.0 Authorization Code flow.
+ *
+ * Uses raw JSON-RPC over stdio — no external npm dependencies required.
  *
  * Tools exposed:
  *   - auth_teams                 Get OAuth authorization URL
@@ -30,10 +32,8 @@
  *   5. Call auth_teams tool to begin OAuth flow
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { readFile, writeFile } from "fs";
-import { promisify } from "util";
+const { readFile, writeFile } = require("fs");
+const { promisify } = require("util");
 
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
@@ -42,7 +42,7 @@ const writeFileAsync = promisify(writeFile);
 
 async function getToken() {
   const tokenFile = process.env.TEAMS_TOKEN_FILE || "~/.freecode/.teams-token.json";
-  const resolvedPath = tokenFile.startsWith("~") ? process.env.HOME + tokenFile.slice(1) : tokenFile;
+  const resolvedPath = tokenFile.startsWith("~") ? (process.env.HOME || process.env.USERPROFILE || "") + tokenFile.slice(1) : tokenFile;
   try {
     const data = await readFileAsync(resolvedPath, "utf-8");
     return JSON.parse(data);
@@ -53,7 +53,7 @@ async function getToken() {
 
 async function saveToken(token) {
   const tokenFile = process.env.TEAMS_TOKEN_FILE || "~/.freecode/.teams-token.json";
-  const resolvedPath = tokenFile.startsWith("~") ? process.env.HOME + tokenFile.slice(1) : tokenFile;
+  const resolvedPath = tokenFile.startsWith("~") ? (process.env.HOME || process.env.USERPROFILE || "") + tokenFile.slice(1) : tokenFile;
   await writeFileAsync(resolvedPath, JSON.stringify(token, null, 2));
 }
 
@@ -237,17 +237,23 @@ class TeamsClient {
   }
 }
 
-// --- MCP Server Setup ---
+// --- Raw MCP JSON-RPC over stdio (no SDK needed) ---
 
 const teams = new TeamsClient();
-const server = new McpServer({
-  name: "teams-api-connector",
-  version: "1.0.0",
-});
+
+const tools = [];
+function defTool(name, desc, params, handler) {
+  tools.push({ name, description: desc, inputSchema: { type: "object", properties: params, required: [] }, handler });
+}
+
+const unauthMsg = {
+  content: [{ type: "text", text: "Not authenticated with Teams. Call auth_teams to get the authorization URL, complete the browser flow, then call auth_teams_exchange_code with the code." }],
+  isError: true,
+};
 
 // --- Auth Tools ---
 
-server.tool(
+defTool(
   "auth_teams",
   "Get the OAuth authorization URL for Microsoft Teams. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_teams_exchange_code.",
   {},
@@ -264,7 +270,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "auth_teams_exchange_code",
   "Exchange an OAuth authorization code for Microsoft Teams access tokens. Call this after completing the browser auth flow.",
   {
@@ -292,12 +298,7 @@ server.tool(
 
 // --- Teams Tools ---
 
-const unauthMsg = {
-  content: [{ type: "text", text: "Not authenticated with Teams. Call auth_teams to get the authorization URL, complete the browser flow, then call auth_teams_exchange_code with the code." }],
-  isError: true,
-};
-
-server.tool(
+defTool(
   "teams_list_teams",
   "List all Microsoft Teams the user is a member of.",
   {},
@@ -315,7 +316,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "teams_list_channels",
   "List channels in a specific team.",
   {
@@ -335,7 +336,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "teams_get_messages",
   "Get recent messages from a channel. Shows sender, time, and content.",
   {
@@ -361,7 +362,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "teams_send_message",
   "Send a message to a channel. Supports HTML formatting.",
   {
@@ -380,7 +381,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "teams_get_calendar",
   "Get calendar events for the next N days.",
   {
@@ -400,7 +401,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "teams_create_event",
   "Create a calendar event with optional attendees.",
   {
@@ -422,7 +423,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "teams_get_tasks",
   "Get Microsoft Planner tasks assigned to the user.",
   {},
@@ -440,7 +441,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "teams_list_users",
   "List members of a specific team.",
   {
@@ -460,7 +461,55 @@ server.tool(
   }
 );
 
-// Start the server
-const transport = new StdioServerTransport();
-await server.connect(transport);
+// --- MCP JSON-RPC server ---
+
+function write(msg) { process.stdout.write(JSON.stringify(msg) + "\n"); }
+
+async function handleRequest(msg) {
+  const id = msg.id;
+
+  if (msg.method === "initialize") {
+    return { jsonrpc: "2.0", id, result: { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "teams-api-connector", version: "1.0.1" } } };
+  }
+
+  if (msg.method === "notifications/initialized") {
+    return null;
+  }
+
+  if (msg.method === "tools/list") {
+    return {
+      jsonrpc: "2.0", id,
+      result: { tools: tools.map(t => ({ name: t.name, description: t.description, inputSchema: t.inputSchema })) },
+    };
+  }
+
+  if (msg.method === "tools/call") {
+    const tool = tools.find(t => t.name === msg.params?.name);
+    if (!tool) return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown tool: ${msg.params?.name}` } };
+    try {
+      const result = await tool.handler(msg.params || {});
+      return { jsonrpc: "2.0", id, result };
+    } catch (e) {
+      return { jsonrpc: "2.0", id, result: { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true } };
+    }
+  }
+
+  return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown method: ${msg.method}` } };
+}
+
+// Read stdin line by line
+const readline = require("readline");
+const rl = readline.createInterface({ input: process.stdin });
+
+rl.on("line", async (line) => {
+  if (!line.trim()) return;
+  try {
+    const msg = JSON.parse(line);
+    const response = await handleRequest(msg);
+    if (response) write(response);
+  } catch (e) {
+    console.error("MCP error:", e.message);
+  }
+});
+
 console.error("Teams MCP server running on stdio");

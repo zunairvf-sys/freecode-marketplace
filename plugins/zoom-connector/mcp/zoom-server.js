@@ -1,8 +1,11 @@
+#!/usr/bin/env node
 /**
- * Zoom MCP Server - API-based Zoom integration
+ * Zoom MCP Server - API-based Zoom integration (zero-dependency)
  *
  * Provides tools for scheduling, starting, ending, and managing Zoom meetings
  * via the Zoom REST API v2. Uses OAuth 2.0 with token persistence.
+ *
+ * Uses raw JSON-RPC over stdio — no external npm dependencies required.
  *
  * Tools exposed:
  *   - auth_zoom                  Get OAuth authorization URL
@@ -28,10 +31,8 @@
  *   5. Call auth_zoom tool to begin OAuth flow
  */
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { readFile, writeFile } from "fs";
-import { promisify } from "util";
+const { readFile, writeFile } = require("fs");
+const { promisify } = require("util");
 
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
@@ -40,7 +41,7 @@ const writeFileAsync = promisify(writeFile);
 
 async function getToken() {
   const tokenFile = process.env.ZOOM_TOKEN_FILE || "~/.freecode/.zoom-token.json";
-  const resolvedPath = tokenFile.startsWith("~") ? process.env.HOME + tokenFile.slice(1) : tokenFile;
+  const resolvedPath = tokenFile.startsWith("~") ? (process.env.HOME || process.env.USERPROFILE || "") + tokenFile.slice(1) : tokenFile;
   try {
     const data = await readFileAsync(resolvedPath, "utf-8");
     return JSON.parse(data);
@@ -51,7 +52,7 @@ async function getToken() {
 
 async function saveToken(token) {
   const tokenFile = process.env.ZOOM_TOKEN_FILE || "~/.freecode/.zoom-token.json";
-  const resolvedPath = tokenFile.startsWith("~") ? process.env.HOME + tokenFile.slice(1) : tokenFile;
+  const resolvedPath = tokenFile.startsWith("~") ? (process.env.HOME || process.env.USERPROFILE || "") + tokenFile.slice(1) : tokenFile;
   await writeFileAsync(resolvedPath, JSON.stringify(token, null, 2));
 }
 
@@ -203,17 +204,23 @@ class ZoomClient {
   }
 }
 
-// --- MCP Server Setup ---
+// --- Raw MCP JSON-RPC over stdio (no SDK needed) ---
 
 const zoom = new ZoomClient();
-const server = new McpServer({
-  name: "zoom-api-connector",
-  version: "1.0.0",
-});
+
+const tools = [];
+function defTool(name, desc, params, handler) {
+  tools.push({ name, description: desc, inputSchema: { type: "object", properties: params, required: [] }, handler });
+}
+
+const unauthMsg = {
+  content: [{ type: "text", text: "Not authenticated with Zoom. Call auth_zoom to get the authorization URL, complete the browser flow, then call auth_zoom_exchange_code with the code." }],
+  isError: true,
+};
 
 // --- Auth Tools ---
 
-server.tool(
+defTool(
   "auth_zoom",
   "Get the OAuth authorization URL for Zoom. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_zoom_exchange_code.",
   {},
@@ -230,7 +237,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "auth_zoom_exchange_code",
   "Exchange an OAuth authorization code for Zoom access tokens. Call this after completing the browser auth flow.",
   {
@@ -258,12 +265,7 @@ server.tool(
 
 // --- Zoom Tools ---
 
-const unauthMsg = {
-  content: [{ type: "text", text: "Not authenticated with Zoom. Call auth_zoom to get the authorization URL, complete the browser flow, then call auth_zoom_exchange_code with the code." }],
-  isError: true,
-};
-
-server.tool(
+defTool(
   "zoom_schedule_meeting",
   "Schedule a new Zoom meeting. Supports topics, start time, duration, timezone, recurrence, and meeting options.",
   {
@@ -304,7 +306,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "zoom_list_upcoming",
   "List upcoming scheduled meetings.",
   {
@@ -328,7 +330,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "zoom_get_meeting",
   "Get details of a specific meeting by its ID or UUID.",
   {
@@ -348,7 +350,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "zoom_update_meeting",
   "Update an existing meeting (topic, time, duration, settings).",
   {
@@ -372,7 +374,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "zoom_delete_meeting",
   "Cancel a scheduled meeting.",
   {
@@ -387,7 +389,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "zoom_start_meeting",
   "Start a meeting programmatically. Useful for automation workflows.",
   {
@@ -414,7 +416,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "zoom_end_meeting",
   "End a meeting that is currently in progress.",
   {
@@ -429,7 +431,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "zoom_get_recording",
   "Get recording information for a completed meeting.",
   {
@@ -452,7 +454,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "zoom_get_user_profile",
   "Get current Zoom user profile information.",
   {},
@@ -470,7 +472,7 @@ server.tool(
   }
 );
 
-server.tool(
+defTool(
   "zoom_list_past",
   "List past meetings.",
   {
@@ -494,7 +496,55 @@ server.tool(
   }
 );
 
-// Start the server
-const transport = new StdioServerTransport();
-await server.connect(transport);
+// --- MCP JSON-RPC server ---
+
+function write(msg) { process.stdout.write(JSON.stringify(msg) + "\n"); }
+
+async function handleRequest(msg) {
+  const id = msg.id;
+
+  if (msg.method === "initialize") {
+    return { jsonrpc: "2.0", id, result: { protocolVersion: "2024-11-05", capabilities: { tools: {} }, serverInfo: { name: "zoom-api-connector", version: "1.0.1" } } };
+  }
+
+  if (msg.method === "notifications/initialized") {
+    return null;
+  }
+
+  if (msg.method === "tools/list") {
+    return {
+      jsonrpc: "2.0", id,
+      result: { tools: tools.map(t => ({ name: t.name, description: t.description, inputSchema: t.inputSchema })) },
+    };
+  }
+
+  if (msg.method === "tools/call") {
+    const tool = tools.find(t => t.name === msg.params?.name);
+    if (!tool) return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown tool: ${msg.params?.name}` } };
+    try {
+      const result = await tool.handler(msg.params || {});
+      return { jsonrpc: "2.0", id, result };
+    } catch (e) {
+      return { jsonrpc: "2.0", id, result: { content: [{ type: "text", text: `Error: ${e.message}` }], isError: true } };
+    }
+  }
+
+  return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown method: ${msg.method}` } };
+}
+
+// Read stdin line by line
+const readline = require("readline");
+const rl = readline.createInterface({ input: process.stdin });
+
+rl.on("line", async (line) => {
+  if (!line.trim()) return;
+  try {
+    const msg = JSON.parse(line);
+    const response = await handleRequest(msg);
+    if (response) write(response);
+  } catch (e) {
+    console.error("MCP error:", e.message);
+  }
+});
+
 console.error("Zoom MCP server running on stdio");
