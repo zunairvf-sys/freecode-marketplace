@@ -252,31 +252,33 @@ function encodeMimeMessage(from, to, subject, body, html, replyTo, cc) {
   return Buffer.from(mime).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
-function decodeMimeMessage(raw) {
-  const decoded = Buffer.from(
-    raw.replace(/-/g, "+").replace(/_/g, "/").replace(/=/g, ""),
-    "base64"
-  ).toString("utf-8");
+// Gmail API messages.get returns headers as a [{name, value}] array on
+// payload (and each part), and body content as base64url in
+// payload.body.data (simple messages) or nested payload.parts[].body.data
+// (multipart) — never as a raw RFC822 blob, so headers must be read from
+// `headers`, not decoded from the body.
+function getHeader(payload, name) {
+  const match = (payload?.headers || []).find(h => h.name.toLowerCase() === name.toLowerCase());
+  return match ? match.value : "";
+}
 
-  const headers = {};
-  const headerEnd = decoded.indexOf("\r\n\r\n");
-  if (headerEnd > -1) {
-    decoded.slice(0, headerEnd).split("\r\n").forEach(line => {
-      const colonIdx = line.indexOf(":");
-      if (colonIdx > -1) {
-        headers[line.slice(0, colonIdx).toLowerCase()] = line.slice(colonIdx + 2);
-      }
-    });
+function decodeBase64Url(data) {
+  if (!data) return "";
+  return Buffer.from(data.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf-8");
+}
+
+function findBodyPart(payload, mimeType) {
+  if (!payload) return "";
+  if (payload.mimeType === mimeType && payload.body?.data) return decodeBase64Url(payload.body.data);
+  for (const part of payload.parts || []) {
+    const found = findBodyPart(part, mimeType);
+    if (found) return found;
   }
+  return "";
+}
 
-  return {
-    headers,
-    subject: headers.subject || "",
-    from: headers.from || "",
-    to: headers.to || "",
-    date: headers.date || "",
-    body: decoded.slice(headerEnd + 4),
-  };
+function getMessageBody(payload) {
+  return findBodyPart(payload, "text/plain") || findBodyPart(payload, "text/html") || decodeBase64Url(payload?.body?.data);
 }
 
 // --- Tool Implementations ---
@@ -317,8 +319,20 @@ const tools = {
       const qs = new URLSearchParams({ maxResults: maxResults || "20", q: query || "", includeSpamTrash: "false" });
       const data = await gmailRequest("GET", `/users/me/messages?${qs}`);
       const messages = data.messages || [];
+      // messages.list only returns id/threadId; fetch metadata (snippet,
+      // From, Subject) for the messages we're about to display.
+      const top = messages.slice(0, 10);
+      const detailed = await Promise.all(top.map(m => {
+        const metaQs = new URLSearchParams({ format: "metadata" });
+        metaQs.append("metadataHeaders", "Subject");
+        metaQs.append("metadataHeaders", "From");
+        return gmailRequest("GET", `/users/me/messages/${m.id}?${metaQs}`);
+      }));
+      const lines = detailed.map((full, i) =>
+        `${i + 1}. ID: ${full.id} | Thread: ${full.threadId} | From: ${getHeader(full.payload, "From")} | Subject: ${getHeader(full.payload, "Subject")} | Snippet: ${full.snippet || "N/A"}`
+      );
       return {
-        content: [{ type: "text", text: `Found ${messages.length} messages.\n${messages.slice(0, 10).map((m, i) => `${i + 1}. ID: ${m.id} | Thread: ${m.threadId} | Snippet: ${m.snippet || "N/A"}`).join("\n")}` }],
+        content: [{ type: "text", text: `Found ${messages.length} messages.\n${lines.join("\n")}` }],
       };
     },
   },
@@ -329,9 +343,12 @@ const tools = {
     handler: async ({ messageId }) => {
       if (!(await ensureAuthenticated())) return unauthMsg;
       const msg = await gmailRequest("GET", `/users/me/messages/${messageId}`);
-      const rawData = msg.payload?.parts?.find(p => p.mimeType === "text/plain")?.body?.data || msg.payload?.body?.data || "";
-      const decoded = decodeMimeMessage(rawData);
-      return { content: [{ type: "text", text: `From: ${decoded.from}\nTo: ${decoded.to}\nDate: ${decoded.date}\nSubject: ${decoded.subject}\n\n${decoded.body}` }] };
+      const from = getHeader(msg.payload, "From");
+      const to = getHeader(msg.payload, "To");
+      const date = getHeader(msg.payload, "Date");
+      const subject = getHeader(msg.payload, "Subject");
+      const body = getMessageBody(msg.payload);
+      return { content: [{ type: "text", text: `From: ${from}\nTo: ${to}\nDate: ${date}\nSubject: ${subject}\n\n${body}` }] };
     },
   },
 
@@ -349,7 +366,7 @@ const tools = {
       const results = await Promise.all(
         messages.slice(0, 10).map(async m => {
           const full = await gmailRequest("GET", `/users/me/messages/${m.id}`);
-          return { id: m.id, snippet: m.snippet, labels: full.labelIds };
+          return { id: m.id, snippet: full.snippet, labels: full.labelIds };
         })
       );
       return { content: [{ type: "text", text: `Search results for "${query}":\n${JSON.stringify(results, null, 2)}` }] };
@@ -401,8 +418,9 @@ const tools = {
       if (!(await ensureAuthenticated())) return unauthMsg;
       const thread = await gmailRequest("GET", `/users/me/threads/${threadId}`);
       const lastMsg = thread.messages[thread.messages.length - 1];
-      const decoded = decodeMimeMessage(lastMsg.payload?.body?.data || "");
-      const raw = encodeMimeMessage("", decoded.from, `Re: ${decoded.subject}`, body);
+      const from = getHeader(lastMsg.payload, "From");
+      const subject = getHeader(lastMsg.payload, "Subject");
+      const raw = encodeMimeMessage("", from, `Re: ${subject}`, body);
       const sent = await gmailRequest("POST", `/users/me/messages/send`, { raw });
       return { content: [{ type: "text", text: `Reply sent to thread ${threadId}.\nMessage ID: ${sent.id}` }] };
     },
@@ -467,8 +485,10 @@ const tools = {
       const thread = await gmailRequest("GET", `/users/me/threads/${threadId}`);
       const messages = thread.messages || [];
       const summary = messages.map((m, i) => {
-        const decoded = decodeMimeMessage(m.payload?.body?.data || "");
-        return `${i + 1}. [${decoded.date}] ${decoded.from}: ${decoded.subject}`;
+        const date = getHeader(m.payload, "Date");
+        const from = getHeader(m.payload, "From");
+        const subject = getHeader(m.payload, "Subject");
+        return `${i + 1}. [${date}] ${from}: ${subject}`;
       }).join("\n");
       return { content: [{ type: "text", text: `Thread ${threadId} (${messages.length} messages):\n${summary}` }] };
     },
