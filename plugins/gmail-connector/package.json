@@ -1,0 +1,9 @@
+{
+  "name": "gmail-connector",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Gmail API MCP connector for FreeCode",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "name": "teams-connector",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Microsoft Teams API MCP connector for FreeCode",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  }
+}
