@@ -3,7 +3,14 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Zoom API MCP connector for FreeCode",
+  "main": "mcp/zoom-server.js",
+  "scripts": {
+    "start": "node mcp/zoom-server.js"
+  },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.29.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }
