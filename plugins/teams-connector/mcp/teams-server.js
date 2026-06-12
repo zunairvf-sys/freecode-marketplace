@@ -3,9 +3,11 @@
  *
  * Provides tools for reading/sending messages, managing channels,
  * viewing calendar events, and handling tasks via Microsoft Graph API.
- * Uses OAuth 2.0 Client Credentials / Authorization Code flow.
+ * Uses OAuth 2.0 Authorization Code flow.
  *
  * Tools exposed:
+ *   - auth_teams                 Get OAuth authorization URL
+ *   - auth_teams_exchange_code   Exchange authorization code for tokens
  *   - teams_list_teams            List teams the user is a member of
  *   - teams_list_channels         List channels in a team
  *   - teams_get_messages          Get messages from a channel
@@ -25,7 +27,7 @@
  *      User.Read, Tasks.ReadWrite
  *   3. Create client secret
  *   4. Install plugin: freecode plugin install freecode-teams-connector
- *   5. First tool call triggers OAuth flow
+ *   5. Call auth_teams tool to begin OAuth flow
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -67,16 +69,14 @@ class TeamsClient {
     this.token = null;
   }
 
-  async authenticate() {
+  async ensureAuthenticated() {
     this.token = await getToken();
     if (!this.token || Date.now() / 1000 > this.token.expires_in) {
       if (this.token) {
         await this.refreshToken();
-      } else {
-        console.error(`\n[Teams OAuth] Open this URL in your browser:`);
-        console.error(`${this.getAuthUrl()}\n`);
-        return false;
+        return true;
       }
+      return false;
     }
     return true;
   }
@@ -98,6 +98,28 @@ class TeamsClient {
       `&redirect_uri=http://localhost:3421/callback` +
       `&scope=${scope}`
     );
+  }
+
+  async exchangeCode(code) {
+    const response = await fetch(`${this.authUrl}/${this.tenantId}/oauth2/v2.0/token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: "http://localhost:3421/callback",
+      }),
+    });
+    const data = await response.json();
+    if (data.access_token) {
+      data.expires_in = Date.now() / 1000 + (data.expires_in || 3600);
+      this.token = data;
+      await saveToken(data);
+      return data;
+    }
+    throw new Error(`Token exchange failed: ${JSON.stringify(data)}`);
   }
 
   async refreshToken() {
@@ -223,15 +245,64 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
+// --- Auth Tools ---
+
+server.tool(
+  "auth_teams",
+  "Get the OAuth authorization URL for Microsoft Teams. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_teams_exchange_code.",
+  {},
+  async () => {
+    const authUrl = teams.getAuthUrl();
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Open this URL in your browser to authorize Microsoft Teams access:\n\n${authUrl}\n\nAfter authorizing, you will be redirected to a URL containing a 'code' parameter. Copy that code and pass it to the auth_teams_exchange_code tool.`,
+        },
+      ],
+    };
+  }
+);
+
+server.tool(
+  "auth_teams_exchange_code",
+  "Exchange an OAuth authorization code for Microsoft Teams access tokens. Call this after completing the browser auth flow.",
+  {
+    code: { type: "string", description: "The authorization code from the redirect URL" },
+  },
+  async ({ code }) => {
+    try {
+      await teams.exchangeCode(code.trim());
+      return {
+        content: [
+          {
+            type: "text",
+            text: "Teams authentication successful! Token saved. You can now use Teams tools.",
+          },
+        ],
+      };
+    } catch (e) {
+      return {
+        content: [{ type: "text", text: `Auth failed: ${e.message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// --- Teams Tools ---
+
+const unauthMsg = {
+  content: [{ type: "text", text: "Not authenticated with Teams. Call auth_teams to get the authorization URL, complete the browser flow, then call auth_teams_exchange_code with the code." }],
+  isError: true,
+};
+
 server.tool(
   "teams_list_teams",
   "List all Microsoft Teams the user is a member of.",
   {},
   async () => {
-    const authenticated = await teams.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Teams OAuth authentication required." }], isError: true };
-    }
+    if (!(await teams.ensureAuthenticated())) return unauthMsg;
     const data = await teams.listTeams();
     const list = (data.value || [])
       .map(t => `• ${t.displayName} (ID: ${t.id})${t.description ? ` - ${t.description}` : ""}`)
@@ -251,10 +322,7 @@ server.tool(
     teamId: { type: "string", description: "Team ID" },
   },
   async ({ teamId }) => {
-    const authenticated = await teams.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Teams OAuth authentication required." }], isError: true };
-    }
+    if (!(await teams.ensureAuthenticated())) return unauthMsg;
     const data = await teams.listChannels(teamId);
     const list = (data.value || [])
       .map(c => `• ${c.displayName} (ID: ${c.id})`)
@@ -275,10 +343,7 @@ server.tool(
     top: { type: "number", description: "Number of messages to retrieve", default: 20 },
   },
   async ({ channelId, top }) => {
-    const authenticated = await teams.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Teams OAuth authentication required." }], isError: true };
-    }
+    if (!(await teams.ensureAuthenticated())) return unauthMsg;
     const data = await teams.getMessages(channelId, top);
     const list = (data.value || [])
       .map(m => {
@@ -305,10 +370,7 @@ server.tool(
     subject: { type: "string", description: "Message subject (optional)" },
   },
   async ({ channelId, body, subject }) => {
-    const authenticated = await teams.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Teams OAuth authentication required." }], isError: true };
-    }
+    if (!(await teams.ensureAuthenticated())) return unauthMsg;
     const msg = await teams.sendMessage(channelId, body, subject);
     return {
       content: [
@@ -325,10 +387,7 @@ server.tool(
     nextDays: { type: "number", description: "Number of days to look ahead", default: 7 },
   },
   async ({ nextDays }) => {
-    const authenticated = await teams.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Teams OAuth authentication required." }], isError: true };
-    }
+    if (!(await teams.ensureAuthenticated())) return unauthMsg;
     const data = await teams.getCalendarEvents(nextDays);
     const list = (data.value || [])
       .map(e => `• ${e.subject}\n  ${e.start?.dateTime} → ${e.end?.dateTime}\n  ${e.organizer?.emailAddress?.address || "N/A"}\n`)
@@ -352,10 +411,7 @@ server.tool(
     attendees: { type: "string", description: "Comma-separated attendee emails (optional)" },
   },
   async ({ subject, start, end, body, attendees }) => {
-    const authenticated = await teams.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Teams OAuth authentication required." }], isError: true };
-    }
+    if (!(await teams.ensureAuthenticated())) return unauthMsg;
     const attendeeList = attendees ? attendees.split(",").map(a => a.trim()) : [];
     const event = await teams.createCalendarEvent(subject, start, end, body, attendeeList);
     return {
@@ -371,10 +427,7 @@ server.tool(
   "Get Microsoft Planner tasks assigned to the user.",
   {},
   async () => {
-    const authenticated = await teams.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Teams OAuth authentication required." }], isError: true };
-    }
+    if (!(await teams.ensureAuthenticated())) return unauthMsg;
     const data = await teams.getTasks();
     const list = (data.value || [])
       .map(t => `• ${t.title} [${t.bucketHint || "N/A"}] - ${t.status || "no status"}`)
@@ -394,10 +447,7 @@ server.tool(
     teamId: { type: "string", description: "Team ID" },
   },
   async ({ teamId }) => {
-    const authenticated = await teams.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Teams OAuth authentication required." }], isError: true };
-    }
+    if (!(await teams.ensureAuthenticated())) return unauthMsg;
     const data = await teams.listTeamMembers(teamId);
     const list = (data.value || [])
       .map(m => `• ${m.displayName} (ID: ${m.id})`)

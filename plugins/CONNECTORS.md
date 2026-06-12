@@ -19,20 +19,23 @@ plugins/<name>-connector/
 
 | Connector | Service | API | Tools |
 |---|---|---|---|
-| `gmail-connector` | Gmail | Google Gmail REST API | 12 tools (read, send, search, draft, labels, threads) |
-| `zoom-connector` | Zoom | Zoom Meetings API | 10 tools (schedule, list, update, recordings, profile) |
-| `teams-connector` | Microsoft Teams | Microsoft Graph API | 8 tools (teams, channels, messages, calendar, users) |
-| `calendar-connector` | Google Calendar | Google Calendar REST API | 8 tools (events, free/busy, quick-add, availability) |
+| `gmail-connector` | Gmail | Google Gmail REST API | 14 tools (auth, read, send, search, draft, labels, threads) |
+| `zoom-connector` | Zoom | Zoom Meetings API | 12 tools (auth, schedule, list, update, recordings, profile) |
+| `teams-connector` | Microsoft Teams | Microsoft Graph API | 10 tools (auth, teams, channels, messages, calendar, users) |
+| `calendar-connector` | Google Calendar | Google Calendar REST API | 10 tools (auth, events, free/busy, quick-add, availability) |
 
 ## Authentication
 
-All connectors use OAuth 2.0 with token persistence:
+All connectors use OAuth 2.0 with token persistence. Since the MCP stdio transport consumes stdin/stdout, authentication happens through dedicated MCP tools rather than terminal prompts.
 
 1. **user_config** in `plugin.json` defines required credentials (`CLIENT_ID`, `CLIENT_SECRET`, etc.)
 2. Secrets are marked with `"secret": true` so they're never logged or exposed
-3. On first use, the MCP server prints an auth URL and prompts for the authorization code
+3. Each connector exposes two auth tools:
+   - `auth_<service>` — Returns the OAuth authorization URL to open in the browser
+   - `auth_<service>_exchange_code` — Accepts the authorization code and exchanges it for tokens
 4. Tokens are stored in `~/.freecode/.<service>-token.json`
 5. Token refresh is automatic; re-auth only when refresh token is revoked
+6. If a tool is called without authentication, it returns a clear message directing the user to call the auth tool
 
 ## MCP Server Architecture
 
@@ -56,9 +59,9 @@ await server.connect(transport);
 Each service has a client class handling:
 - Token load/save from disk
 - Token expiry detection and refresh
-- OAuth consent flow (first-time auth)
+- OAuth code exchange (called via `auth_<service>_exchange_code` tool)
 - HTTP API calls with auth headers
-- 401 retry logic (re-auth on expired tokens)
+- 401 retry logic (refresh on expired tokens)
 
 ## Environment Variables
 
@@ -68,8 +71,10 @@ The plugin system substitutes `${FREECODE_PLUGIN_OPTION_<KEY>}` variables from u
 
 1. Install from marketplace: `freecode marketplace install <name>-connector`
 2. Configure credentials when prompted (or set via settings)
-3. First API call triggers OAuth consent flow
-4. Tools become available immediately after authentication
+3. Call the `auth_<service>` tool to get the OAuth URL
+4. Open the URL in your browser, authorize the app
+5. Call `auth_<service>_exchange_code` with the authorization code
+6. Tools become available immediately after authentication
 
 ## Adding a New Connector
 

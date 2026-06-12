@@ -5,6 +5,8 @@
  * via the Gmail REST API. Uses OAuth 2.0 with token persistence.
  *
  * Tools exposed:
+ *   - auth_gmail                 Get OAuth authorization URL
+ *   - auth_gmail_exchange_code   Exchange authorization code for tokens
  *   - gmail_read_inbox         List recent messages with filters
  *   - gmail_read_message       Read a full message by ID
  *   - gmail_search_messages    Search messages by query
@@ -24,7 +26,7 @@
  *   3. Create OAuth 2.0 credentials (Desktop app type)
  *   4. Download client_secret.json or copy Client ID + Secret
  *   5. Install plugin via marketplace: freecode plugin install freecode-gmail-connector
- *   6. First tool call triggers OAuth flow in default browser
+ *   6. Call auth_gmail tool to begin OAuth flow
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -66,21 +68,14 @@ class GmailClient {
     this.token = null;
   }
 
-  async authenticate() {
+  async ensureAuthenticated() {
     this.token = await getToken();
     if (!this.token || this.token.expiry_time < Date.now() / 1000) {
       if (this.token && this.token.refresh_token) {
         await this.refreshAccessToken();
-      } else {
-        // First run: output OAuth URL for user to authorize
-        const authUrl = this.getAuthUrl();
-        console.error(`\n[Gmail OAuth] Open this URL in your browser:`);
-        console.error(`${authUrl}\n`);
-        console.error(`After authorizing, the token will be stored automatically.`);
-        // In a full implementation, start a local HTTP server to catch the callback
-        // For MCP servers, we output the URL and the user completes the flow
-        return false;
+        return true;
       }
+      return false;
     }
     return true;
   }
@@ -98,6 +93,28 @@ class GmailClient {
       `&access_type=offline` +
       `&prompt=consent`
     );
+  }
+
+  async exchangeCode(code) {
+    const response = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        code,
+        client_id: this.clientId,
+        client_secret: this.clientSecret,
+        redirect_uri: this.redirectUri,
+        grant_type: "authorization_code",
+      }),
+    });
+    const data = await response.json();
+    if (data.access_token) {
+      data.expiry_time = Date.now() / 1000 + (data.expires_in || 3600);
+      this.token = data;
+      await saveToken(data);
+      return data;
+    }
+    throw new Error(`Token exchange failed: ${JSON.stringify(data)}`);
   }
 
   async refreshAccessToken() {
@@ -151,11 +168,6 @@ class GmailClient {
   }
 
   async getMessage(id) {
-    const fmt = params => {
-      const p = {};
-      if (params.format === "full") p.format = "full";
-      return p;
-    };
     return this.request("GET", `/users/me/messages/${id}`);
   }
 
@@ -258,6 +270,58 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
+// --- Auth Tools ---
+
+server.tool(
+  "auth_gmail",
+  "Get the OAuth authorization URL for Gmail. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_gmail_exchange_code.",
+  {},
+  async () => {
+    const authUrl = gmail.getAuthUrl();
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Open this URL in your browser to authorize Gmail access:\n\n${authUrl}\n\nAfter authorizing, you will be redirected to a URL containing a 'code' parameter. Copy that code and pass it to the auth_gmail_exchange_code tool.`,
+        },
+      ],
+    };
+  }
+);
+
+server.tool(
+  "auth_gmail_exchange_code",
+  "Exchange an OAuth authorization code for Gmail access tokens. Call this after completing the browser auth flow.",
+  {
+    code: { type: "string", description: "The authorization code from the redirect URL" },
+  },
+  async ({ code }) => {
+    try {
+      await gmail.exchangeCode(code.trim());
+      return {
+        content: [
+          {
+            type: "text",
+            text: "Gmail authentication successful! Token saved. You can now use Gmail tools.",
+          },
+        ],
+      };
+    } catch (e) {
+      return {
+        content: [{ type: "text", text: `Auth failed: ${e.message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// --- Gmail Tools ---
+
+const unauthMsg = {
+  content: [{ type: "text", text: "Not authenticated with Gmail. Call auth_gmail to get the authorization URL, complete the browser flow, then call auth_gmail_exchange_code with the code." }],
+  isError: true,
+};
+
 server.tool(
   "gmail_read_inbox",
   "List recent messages in your inbox. Supports filtering by sender, recipient, subject, and labels.",
@@ -266,13 +330,7 @@ server.tool(
     query: { type: "string", description: 'Search query (e.g., "from:alice@example.com is:unread")' },
   },
   async ({ maxResults, query }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return {
-        content: [{ type: "text", text: "OAuth authentication required. Please complete the OAuth flow." }],
-        isError: true,
-      };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const messages = await gmail.listMessages({ maxResults, query: query || undefined });
     return {
       content: [
@@ -295,10 +353,7 @@ server.tool(
     messageId: { type: "string", description: "The Gmail message ID to read" },
   },
   async ({ messageId }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const msg = await gmail.getMessage(messageId, { format: "full" });
     const decoded = decodeMimeMessage(msg.payload.parts?.find(p => p.mimeType === "text/plain")?.body?.data || msg.payload.body.data || "");
     return {
@@ -320,10 +375,7 @@ server.tool(
     maxResults: { type: "string", description: "Max results (default: 20)", default: "20" },
   },
   async ({ query, maxResults }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const messages = await gmail.listMessages({ maxResults, query });
     const results = await Promise.all(
       messages.slice(0, 10).map(async m => {
@@ -354,10 +406,7 @@ server.tool(
     replyTo: { type: "string", description: "Reply-To address (optional)" },
   },
   async ({ to, subject, body, html, cc, replyTo }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const fromAddress = process.env.GMAIL_FROM_ADDRESS || "";
     const raw = encodeMimeMessage(fromAddress || "me", to, subject, body, html || false, replyTo || null, cc || null);
     const sent = await gmail.sendMessage("me", raw);
@@ -382,10 +431,7 @@ server.tool(
     html: { type: "boolean", description: "Set to true for HTML body", default: false },
   },
   async ({ to, subject, body, html }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const raw = encodeMimeMessage("", to, subject, body, html || false);
     const message = { raw };
     const draft = await gmail.createDraft("me", message);
@@ -408,10 +454,7 @@ server.tool(
     body: { type: "string", description: "Reply body text" },
   },
   async ({ threadId, body }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const thread = await gmail.getThread(threadId);
     const lastMsg = thread.messages[thread.messages.length - 1];
     const decoded = decodeMimeMessage(lastMsg.payload.body.data || "");
@@ -433,10 +476,7 @@ server.tool(
   "List all labels in your Gmail account.",
   {},
   async () => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const labels = await gmail.listLabels();
     return {
       content: [
@@ -460,10 +500,7 @@ server.tool(
     removeLabels: { type: "string", description: "Comma-separated label names to remove" },
   },
   async ({ messageId, addLabels, removeLabels }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     await gmail.labelMessage(
       messageId,
       addLabels ? addLabels.split(",").map(s => s.trim()) : [],
@@ -487,10 +524,7 @@ server.tool(
     messageId: { type: "string", description: "The message ID to delete" },
   },
   async ({ messageId }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     await gmail.deleteMessage(messageId);
     return {
       content: [
@@ -508,10 +542,7 @@ server.tool(
     markRead: { type: "boolean", description: "true to mark as read, false to mark as unread", default: true },
   },
   async ({ messageId, markRead }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const body = markRead
       ? { removeLabelIds: ["UNREAD"] }
       : { addLabelIds: ["UNREAD"] };
@@ -534,10 +565,7 @@ server.tool(
     threadId: { type: "string", description: "The Gmail thread ID" },
   },
   async ({ threadId }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const thread = await gmail.getThread(threadId);
     const messages = thread.messages || [];
     const summary = messages
@@ -567,10 +595,7 @@ server.tool(
     cc: { type: "string", description: "CC recipients (optional)" },
   },
   async ({ to, subject, htmlBody, cc }) => {
-    const authenticated = await gmail.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "OAuth authentication required." }], isError: true };
-    }
+    if (!(await gmail.ensureAuthenticated())) return unauthMsg;
     const raw = encodeMimeMessage("", to, subject, htmlBody, true, null, cc || null);
     const sent = await gmail.sendMessage("me", raw);
     return {

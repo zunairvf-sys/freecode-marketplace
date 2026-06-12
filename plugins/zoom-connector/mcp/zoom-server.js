@@ -5,6 +5,8 @@
  * via the Zoom REST API v2. Uses OAuth 2.0 with token persistence.
  *
  * Tools exposed:
+ *   - auth_zoom                  Get OAuth authorization URL
+ *   - auth_zoom_exchange_code    Exchange authorization code for tokens
  *   - zoom_schedule_meeting     Schedule a new meeting
  *   - zoom_update_meeting      Update an existing meeting
  *   - zoom_delete_meeting      Cancel a scheduled meeting
@@ -23,7 +25,7 @@
  *   2. Scopes needed: meeting:write, meeting:read, user:read
  *   3. Copy Account ID, Client ID, Client Secret
  *   4. Install plugin: freecode plugin install freecode-zoom-connector
- *   5. First tool call triggers OAuth flow
+ *   5. Call auth_zoom tool to begin OAuth flow
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -64,16 +66,14 @@ class ZoomClient {
     this.token = null;
   }
 
-  async authenticate() {
+  async ensureAuthenticated() {
     this.token = await getToken();
     if (!this.token || Date.now() / 1000 > this.token.expires_in) {
       if (this.token) {
         await this.refreshToken();
-      } else {
-        console.error(`\n[Zoom OAuth] Open this URL in your browser:`);
-        console.error(`${this.getAuthUrl()}\n`);
-        return false;
+        return true;
       }
+      return false;
     }
     return true;
   }
@@ -89,6 +89,29 @@ class ZoomClient {
       `&redirect_uri=http://localhost:3421/callback` +
       `&scope=${scope}`
     );
+  }
+
+  async exchangeCode(code) {
+    const response = await fetch("https://zoom.us/oauth/token", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded",
+        Authorization: `Basic ${Buffer.from(`${this.clientId}:${this.clientSecret}`).toString("base64")}`,
+      },
+      body: new URLSearchParams({
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: "http://localhost:3421/callback",
+      }),
+    });
+    const data = await response.json();
+    if (data.access_token) {
+      data.expires_in = Date.now() / 1000 + (data.expires_in || 3600);
+      this.token = data;
+      await saveToken(data);
+      return data;
+    }
+    throw new Error(`Token exchange failed: ${JSON.stringify(data)}`);
   }
 
   async refreshToken() {
@@ -188,6 +211,58 @@ const server = new McpServer({
   version: "1.0.0",
 });
 
+// --- Auth Tools ---
+
+server.tool(
+  "auth_zoom",
+  "Get the OAuth authorization URL for Zoom. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_zoom_exchange_code.",
+  {},
+  async () => {
+    const authUrl = zoom.getAuthUrl();
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Open this URL in your browser to authorize Zoom access:\n\n${authUrl}\n\nAfter authorizing, you will be redirected to a URL containing a 'code' parameter. Copy that code and pass it to the auth_zoom_exchange_code tool.`,
+        },
+      ],
+    };
+  }
+);
+
+server.tool(
+  "auth_zoom_exchange_code",
+  "Exchange an OAuth authorization code for Zoom access tokens. Call this after completing the browser auth flow.",
+  {
+    code: { type: "string", description: "The authorization code from the redirect URL" },
+  },
+  async ({ code }) => {
+    try {
+      await zoom.exchangeCode(code.trim());
+      return {
+        content: [
+          {
+            type: "text",
+            text: "Zoom authentication successful! Token saved. You can now use Zoom tools.",
+          },
+        ],
+      };
+    } catch (e) {
+      return {
+        content: [{ type: "text", text: `Auth failed: ${e.message}` }],
+        isError: true,
+      };
+    }
+  }
+);
+
+// --- Zoom Tools ---
+
+const unauthMsg = {
+  content: [{ type: "text", text: "Not authenticated with Zoom. Call auth_zoom to get the authorization URL, complete the browser flow, then call auth_zoom_exchange_code with the code." }],
+  isError: true,
+};
+
 server.tool(
   "zoom_schedule_meeting",
   "Schedule a new Zoom meeting. Supports topics, start time, duration, timezone, recurrence, and meeting options.",
@@ -201,10 +276,7 @@ server.tool(
     settings: { type: "string", description: "JSON string of meeting settings (join_before_host, mute_upon_entry, etc.)" },
   },
   async ({ topic, start_time, duration, timezone, type, password, settings }) => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     const params = {
       topic,
       start_time,
@@ -239,10 +311,7 @@ server.tool(
     page_size: { type: "number", description: "Number of results per page", default: 10 },
   },
   async ({ page_size }) => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     const meetings = await zoom.listMeetings("upcoming");
     const list = (meetings.meetings || [])
       .slice(0, page_size)
@@ -266,10 +335,7 @@ server.tool(
     meetingId: { type: "string", description: "Meeting ID or UUID" },
   },
   async ({ meetingId }) => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     const meeting = await zoom.getMeeting(meetingId);
     return {
       content: [
@@ -293,10 +359,7 @@ server.tool(
     password: { type: "string", description: "New password (optional)" },
   },
   async ({ meetingId, topic, start_time, duration, password }) => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     const params = {};
     if (topic) params.topic = topic;
     if (start_time) params.start_time = start_time;
@@ -316,10 +379,7 @@ server.tool(
     meetingId: { type: "string", description: "Meeting ID or UUID to cancel" },
   },
   async ({ meetingId }) => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     await zoom.deleteMeeting(meetingId);
     return {
       content: [{ type: "text", text: `Meeting ${meetingId} cancelled.` }],
@@ -335,10 +395,7 @@ server.tool(
     participants: { type: "string", description: "JSON array of participant names (optional)" },
   },
   async ({ meetingId, participants }) => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     const opts = {};
     if (participants) {
       try {
@@ -364,10 +421,7 @@ server.tool(
     meetingId: { type: "string", description: "Meeting numeric ID to end" },
   },
   async ({ meetingId }) => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     await zoom.endMeeting(meetingId);
     return {
       content: [{ type: "text", text: `Meeting ${meetingId} has been ended.` }],
@@ -382,10 +436,7 @@ server.tool(
     meetingId: { type: "string", description: "Meeting UUID" },
   },
   async ({ meetingId }) => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     const recording = await zoom.getRecording(meetingId);
     const recordings = (recording.recording_files || [])
       .map(f => `• ${f.recording_type}: ${f.recording_start} (${f.file_size} bytes) - ${f.playback_url || "processing"}`)
@@ -406,10 +457,7 @@ server.tool(
   "Get current Zoom user profile information.",
   {},
   async () => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     const profile = await zoom.getUserProfile();
     return {
       content: [
@@ -429,10 +477,7 @@ server.tool(
     page_size: { type: "number", description: "Number of results", default: 10 },
   },
   async ({ page_size }) => {
-    const authenticated = await zoom.authenticate();
-    if (!authenticated) {
-      return { content: [{ type: "text", text: "Zoom OAuth authentication required." }], isError: true };
-    }
+    if (!(await zoom.ensureAuthenticated())) return unauthMsg;
     const meetings = await zoom.listMeetings("past");
     const list = (meetings.meetings || [])
       .slice(0, page_size)

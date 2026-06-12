@@ -4,6 +4,20 @@
  *
  * Exposes calendar operations via MCP tools using the Google Calendar REST API.
  * OAuth 2.0 token management with automatic refresh.
+ *
+ * Auth tools:
+ *   - auth_calendar              Get OAuth authorization URL
+ *   - auth_calendar_exchange_code  Exchange authorization code for tokens
+ *
+ * Calendar tools:
+ *   - calendar_list_calendars
+ *   - calendar_get_events
+ *   - calendar_create_event
+ *   - calendar_update_event
+ *   - calendar_delete_event
+ *   - calendar_free_busy
+ *   - calendar_get_event
+ *   - calendar_insert_quick_event
  */
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -61,20 +75,8 @@ class CalendarClient {
     return Date.now() >= (expiry - 300000);
   }
 
-  async getTokenWithConsent() {
-    const authUrl = `${AUTH_URL}?client_id=${CLIENT_ID}&redirect_uri=${REDIRECT_URI}&response_type=code&scope=${encodeURIComponent(SCOPES)}&access_type=offline&prompt=consent`;
-    console.log(
-      `\nPlease visit:\n${authUrl}\n\nAfter authorization, enter the code from the redirect URL:\n`
-    );
-    return new Promise((resolve) => {
-      process.stdin.resume();
-      process.stdin.once("data", async (rawCode) => {
-        process.stdin.pause();
-        const code = rawCode.toString().trim();
-        await this.exchangeCode(code);
-        resolve();
-      });
-    });
+  getAuthUrl() {
+    return `${AUTH_URL}?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=${encodeURIComponent(SCOPES)}&access_type=offline&prompt=consent`;
   }
 
   async exchangeCode(code) {
@@ -97,11 +99,12 @@ class CalendarClient {
         }
         this.tokens = data;
         this.saveTokens(data);
-      } else {
-        console.error("Token exchange failed:", data);
+        return data;
       }
+      throw new Error(`Token exchange failed: ${JSON.stringify(data)}`);
     } catch (e) {
       console.error("Token exchange error:", e.message);
+      throw e;
     }
   }
 
@@ -110,13 +113,14 @@ class CalendarClient {
       if (this.tokens && this.tokens.refresh_token) {
         try {
           await this.refreshToken();
-          if (this.tokens && !this.isTokenExpired()) return;
+          if (this.tokens && !this.isTokenExpired()) return true;
         } catch (e) {
           console.error("Refresh failed, re-auth required");
         }
       }
-      await this.getTokenWithConsent();
+      return false;
     }
+    return true;
   }
 
   async refreshToken() {
@@ -146,7 +150,9 @@ class CalendarClient {
   }
 
   async apiCall(endpoint, options = {}) {
-    await this.ensureAuthenticated();
+    if (!(await this.ensureAuthenticated())) {
+      throw new Error("Not authenticated. Call auth_calendar to get the authorization URL, then auth_calendar_exchange_code with the code.");
+    }
     const url = `${CALENDAR_API}${endpoint}`;
     const resp = await fetch(url, {
       ...options,
@@ -157,16 +163,24 @@ class CalendarClient {
       },
     });
     if (resp.status === 401) {
-      await this.getTokenWithConsent();
-      const retryResp = await fetch(url, {
-        ...options,
-        headers: {
-          Authorization: this.authHeader,
-          "Content-Type": "application/json",
-          ...options.headers,
-        },
-      });
-      return retryResp.json();
+      // Token may have expired - try refresh one more time
+      if (this.tokens && this.tokens.refresh_token) {
+        try {
+          await this.refreshToken();
+          const retryResp = await fetch(url, {
+            ...options,
+            headers: {
+              Authorization: this.authHeader,
+              "Content-Type": "application/json",
+              ...options.headers,
+            },
+          });
+          return retryResp.json();
+        } catch (e) {
+          throw new Error("Authentication expired. Please re-authenticate using auth_calendar and auth_calendar_exchange_code.");
+        }
+      }
+      throw new Error("Authentication expired. Please re-authenticate.");
     }
     return resp.json();
   }
@@ -178,6 +192,51 @@ const server = new McpServer({
   version: "1.0.0",
 });
 const calendar = new CalendarClient();
+
+// --- Auth Tools ---
+
+server.tool(
+  "auth_calendar",
+  "Get the OAuth authorization URL for Google Calendar. Open this URL in your browser, authorize the app, then copy the authorization code from the redirect URL and pass it to auth_calendar_exchange_code.",
+  {},
+  async () => {
+    const authUrl = calendar.getAuthUrl();
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Open this URL in your browser to authorize Google Calendar access:\n\n${authUrl}\n\nAfter authorizing, you will be redirected to a URL containing a 'code' parameter. Copy that code and pass it to the auth_calendar_exchange_code tool.`,
+        },
+      ],
+    };
+  }
+);
+
+server.tool(
+  "auth_calendar_exchange_code",
+  "Exchange an OAuth authorization code for Google Calendar access tokens. Call this after completing the browser auth flow.",
+  {
+    code: { type: "string", description: "The authorization code from the redirect URL" },
+  },
+  async ({ code }) => {
+    try {
+      await calendar.exchangeCode(code.trim());
+      return {
+        content: [
+          {
+            type: "text",
+            text: "Calendar authentication successful! Token saved. You can now use Calendar tools.",
+          },
+        ],
+      };
+    } catch (e) {
+      return {
+        content: [{ type: "text", text: `Auth failed: ${e.message}` }],
+        isError: true,
+      };
+    }
+  }
+);
 
 // calendar_list_calendars
 server.tool(
