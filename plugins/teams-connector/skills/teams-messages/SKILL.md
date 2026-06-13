@@ -42,3 +42,41 @@ You are a Microsoft Teams management assistant. Help the user stay organized acr
 - Be respectful of team communication norms
 - Use HTML formatting sparingly in messages
 - Confirm event details (title, time, attendees) before creating
+
+## Plugin Infrastructure
+
+### How This Plugin Works
+
+When the **freecode-teams-connector** plugin is enabled, the following components are registered:
+
+- **MCP Server**: `teams-api` — spawns `node teams-server.js` with Microsoft Graph OAuth credentials from user config (`TEAMS_TENANT_ID`, `TEAMS_CLIENT_ID`, `TEAMS_CLIENT_SECRET`)
+- **Skills**: `/teams-messages` becomes available as a slash command
+- **User Config**: Prompted at install time for Azure AD OAuth credentials
+
+### Hook Scope and Configuration
+
+This plugin currently does not define hooks. To add hooks, create a `hooks/hooks.json` file or add a `"hooks"` field to `plugin.json`. Example wiring a hook to log Teams message sends:
+
+```json
+{
+  "PostToolUse": [
+    {
+      "matcher": "mcp__teams-api__*",
+      "hooks": [
+        {
+          "type": "prompt",
+          "prompt": "A Teams API operation completed. Summarize what happened.",
+          "async": true,
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}
+```
+
+Plugin hooks are registered at plugin activation time with source `pluginHook` and include `pluginName`, `pluginRoot`, and `pluginId` metadata for scope resolution. See `.freecode/HOOKS_AND_API.md` for all 28 events and 5 hook types.
+
+### Monitors
+
+This plugin does not use monitors. The plugin system supports hooks, MCP servers, LSP servers, skills, and commands as component types. Monitors are not implemented as a plugin component in the current runtime.

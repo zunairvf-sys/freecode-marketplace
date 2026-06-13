@@ -77,3 +77,23 @@ Best,
 3. Draft the email content
 4. Either create a Gmail draft OR send directly (confirm with user)
 5. If replying, use `gmail_reply_to_thread` to maintain thread context
+
+## Plugin Infrastructure
+
+### How This Plugin Works
+
+When the **freecode-gmail-connector** plugin is enabled, the following components are registered:
+
+- **MCP Server**: `gmail-api` — spawns `node gmail-server.js` with OAuth credentials from user config (`GMAIL_PROJECT_ID`, `GMAIL_CLIENT_ID`, `GMAIL_CLIENT_SECRET`)
+- **Hooks**: `SessionStart` event — auto-detects email-related keywords in user requests
+- **Skills**: `/gmail-inbox` and `/gmail-compose` become available as slash commands
+
+### Hook Scope and Configuration
+
+Plugin hooks are defined in `hooks/hooks.json`. The `SessionStart` hook uses a `prompt` type with matcher `*` to check for email context on every new session. Hooks registered by plugins have source `pluginHook` and include `pluginName`, `pluginRoot`, and `pluginId` metadata for scope resolution.
+
+To customize hooks, edit `hooks/hooks.json` or the `hooks` field in `plugin.json`. See `.freecode/HOOKS_AND_API.md` for all 28 available events, 5 hook types, and matcher syntax.
+
+### Monitors
+
+This plugin does not use monitors. The plugin system supports hooks, MCP servers, LSP servers, skills, and commands. Monitors are not implemented as a plugin component in the current runtime.

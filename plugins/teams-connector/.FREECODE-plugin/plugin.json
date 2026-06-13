@@ -11,6 +11,7 @@
   "keywords": ["teams", "microsoft", "graph", "messaging", "connector", "api"],
   "category": "connectors",
   "tags": ["teams", "microsoft", "messaging", "connector"],
+  "agents": ["./agents/teams-agent.md", "./agents/teams-communicator.md"],
   "user_config": {
     "TEAMS_TENANT_ID": {
       "description": "Azure AD Tenant ID",

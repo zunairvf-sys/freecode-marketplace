@@ -53,5 +53,6 @@
       "name": "calendar-manage",
       "path": "./skills/calendar-manage/SKILL.md"
     }
-  ]
+  ],
+  "agents": ["./agents/calendar-agent.md", "./agents/meeting-coordinator.md"]
 }
