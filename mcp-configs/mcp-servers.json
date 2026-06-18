@@ -109,6 +109,18 @@
       "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/your/projects"],
       "description": "Filesystem operations (set your path)"
     },
+    "computer-use-windows": {
+      "command": "npx",
+      "args": ["-y", "mcp-control"],
+      "description": "Windows desktop computer use — screenshot, mouse, keyboard, window management (Windows 10/11 only). Tools: screenshot, mouse_move, left_click, right_click, double_click, type, key_press, scroll, list_windows, focus_window. Install note: requires Node 18+ and runs on win32 only.",
+      "_platform": "win32"
+    },
+    "computer-use-mac": {
+      "command": "npx",
+      "args": ["-y", "mac-use-mcp"],
+      "description": "macOS desktop computer use — screenshot, mouse, keyboard, app management via JXA (macOS 13+, zero native dependencies). First run requires approving Accessibility + Screen Recording in System Settings → Privacy & Security.",
+      "_platform": "darwin"
+    },
     "playwright": {
       "command": "npx",
       "args": ["-y", "@playwright/mcp", "--browser", "chrome"],

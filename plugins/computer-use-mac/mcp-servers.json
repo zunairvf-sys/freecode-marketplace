@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "computer-use-mac": {
+      "command": "npx",
+      "args": ["-y", "mac-use-mcp"],
+      "description": "macOS computer use — screenshot, mouse move/click, keyboard input, app focus, scroll via JXA (no external dependencies, macOS 13+). Tools: screenshot, left_click, right_click, double_click, mouse_move, type, key_press, scroll, focus_app, list_apps, get_screen_info.",
+      "_platform": "darwin"
+    }
+  }
+}

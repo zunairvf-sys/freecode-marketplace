@@ -109,6 +109,64 @@
       ]
     },
     {
+      "name": "computer-use-windows",
+      "source": "./plugins/computer-use-windows",
+      "description": "Windows desktop computer use — screenshot, mouse, keyboard, window management via mcp-control (nut.js). Replaces the gated Anthropic native computer-use module with a fully public cross-platform MCP server. Works on Windows 10/11.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "computer-use",
+        "desktop",
+        "automation",
+        "windows",
+        "screenshot",
+        "mcp"
+      ],
+      "category": "automation",
+      "tags": [
+        "computer-use",
+        "windows",
+        "desktop",
+        "mcp",
+        "automation"
+      ],
+      "platform": "win32"
+    },
+    {
+      "name": "computer-use-mac",
+      "source": "./plugins/computer-use-mac",
+      "description": "macOS desktop computer use — screenshot, mouse, keyboard, app focus via mac-use-mcp (JXA, zero dependencies, macOS 13+). Replaces the gated Anthropic native computer-use module with a fully public MCP server. Requires Accessibility + Screen Recording permissions in System Settings.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "MIT",
+      "keywords": [
+        "computer-use",
+        "desktop",
+        "automation",
+        "macos",
+        "screenshot",
+        "mcp"
+      ],
+      "category": "automation",
+      "tags": [
+        "computer-use",
+        "macos",
+        "desktop",
+        "mcp",
+        "automation"
+      ],
+      "platform": "darwin"
+    },
+    {
       "name": "playwright",
       "source": "./plugins/playwright",
       "description": "Lets FreeCode launch a real browser via the Playwright MCP server to navigate, screenshot, and interact with web pages — useful for verifying UI changes and fixing visual bugs.",

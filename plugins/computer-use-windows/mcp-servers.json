@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "computer-use-windows": {
+      "command": "npx",
+      "args": ["-y", "mcp-control"],
+      "description": "Windows computer use — screenshot, mouse move/click, keyboard input, window management via nut.js. Tools: screenshot, mouse_move, left_click, right_click, double_click, type, key_press, scroll, get_screen_size, list_windows, focus_window.",
+      "_platform": "win32"
+    }
+  }
+}
