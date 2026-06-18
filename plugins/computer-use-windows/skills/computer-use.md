@@ -1,56 +1,28 @@
----
-name: computer-use
-description: Control the Windows desktop — take screenshots, move the mouse, click, type, and manage windows. Requires the computer-use-windows plugin (mcp-control MCP server). Use when asked to automate UI tasks, test desktop apps, or interact with any GUI application on Windows.
----
+# Windows Computer Use
 
-## Computer Use on Windows
+You have full Windows desktop control via the `computer-use-windows` MCP server.
 
-You have access to the `computer-use-windows` MCP server which provides full desktop control on Windows 11/10.
+## Available tools
 
-### Available Tools
+- **screenshot** — capture the full screen or a region (returns image)
+- **cursor_position** — get current mouse position
+- **mouse_move** — move mouse to (x, y)
+- **left_click / right_click / middle_click / double_click** — click at coordinates
+- **left_click_drag** — drag from one point to another
+- **left_mouse_down / left_mouse_up** — hold/release mouse button
+- **scroll** — scroll up/down/left/right at a position
+- **type** — type text at current focus
+- **key** — press a key or hotkey (e.g. `ctrl+c`, `alt+f4`, `win`, `enter`)
+- **hold_key** — hold a key for a duration
+- **read_clipboard / write_clipboard** — clipboard access
+- **open_application** — launch an app by name or path
+- **list_granted_applications** — list running processes
+- **screen_size** — get screen dimensions
+- **find_on_screen** — locate an image on screen, returns center coordinates
+- **run_powershell** — execute PowerShell commands
+- **computer_batch** — batch multiple actions in one call
+- **wait** — pause execution
 
-| Tool | What it does |
-|---|---|
-| `mcp__computer-use-windows__screenshot` | Capture the current screen |
-| `mcp__computer-use-windows__mouse_move` | Move mouse to (x, y) |
-| `mcp__computer-use-windows__left_click` | Left click at (x, y) |
-| `mcp__computer-use-windows__right_click` | Right click at (x, y) |
-| `mcp__computer-use-windows__double_click` | Double click at (x, y) |
-| `mcp__computer-use-windows__type` | Type text at current cursor position |
-| `mcp__computer-use-windows__key_press` | Press a key or key combo (e.g. `ctrl+c`, `enter`, `escape`) |
-| `mcp__computer-use-windows__scroll` | Scroll at (x, y) by delta |
-| `mcp__computer-use-windows__get_screen_size` | Get screen resolution |
-| `mcp__computer-use-windows__list_windows` | List open windows |
-| `mcp__computer-use-windows__focus_window` | Bring a window to focus by title |
+## Workflow
 
-### Workflow
-
-1. Always **take a screenshot first** to see current screen state before clicking anything.
-2. Use `get_screen_size` to understand coordinate space.
-3. Click only on visible, identified elements — take another screenshot to verify after each action.
-4. For text input: click the target field first, then use `type`.
-5. For hotkeys: use `key_press` with `+` separator (e.g. `ctrl+shift+t`).
-
-### Safety Rules
-
-- Never click on confirmation dialogs without user instruction.
-- Never type passwords or sensitive credentials.
-- Always screenshot to verify state before destructive actions (delete, submit, send).
-- If unsure where a button is, take a screenshot and describe what you see.
-
-### Example Tasks
-
-**Open an app:**
-```
-screenshot → identify desktop/taskbar → key_press("win") → type("Notepad") → key_press("enter")
-```
-
-**Copy text from a window:**
-```
-screenshot → left_click(window) → key_press("ctrl+a") → key_press("ctrl+c")
-```
-
-**Fill a form:**
-```
-screenshot → left_click(field) → type("value") → key_press("tab") → type("next value") → screenshot to verify → left_click(submit)
-```
+Always take a screenshot first to understand the current screen state before clicking or typing. After any action that changes the screen, take another screenshot to verify the result.
