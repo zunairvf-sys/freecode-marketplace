@@ -1,0 +1,22 @@
+{
+  "name": "freecode-computer-use-mac",
+  "version": "1.0.0",
+  "description": "macOS desktop computer use — screenshot, mouse, keyboard, app focus via mac-use-mcp (JXA, zero dependencies, macOS 13+). Replaces the gated native computer_use module with a fully public MCP server. Requires Accessibility + Screen Recording permissions in System Settings.",
+  "author": {
+    "name": "FreeCode",
+    "email": "support@freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["computer-use", "desktop", "automation", "macos", "screenshot", "mcp"],
+  "category": "automation",
+  "tags": ["computer-use", "macos", "desktop", "mcp", "automation"],
+  "platform": "darwin",
+  "mcpServers": {
+    "computer-use-mac": {
+      "command": "npx",
+      "args": ["-y", "mac-use-mcp"]
+    }
+  },
+  "skills": ["./skills/computer-use.md"]
+}
