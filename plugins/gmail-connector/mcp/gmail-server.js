@@ -37,19 +37,30 @@
  *   6. Call auth_gmail tool to begin OAuth flow
  */
 
-const { readFile, writeFile } = require("fs");
+const { readFile, writeFile, mkdir } = require("fs");
 const { promisify } = require("util");
 const http = require("http");
 const { URL } = require("url");
+const os = require("os");
+const path = require("path");
 
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
+const mkdirAsync = promisify(mkdir);
 
 // --- Token helpers ---
 
 function getTokenPath() {
-  const p = process.env.GMAIL_TOKEN_FILE || "~/.freecode/.gmail-token.json";
-  return p.startsWith("~") ? (process.env.HOME || process.env.USERPROFILE || "") + p.slice(1) : p;
+  const raw = process.env.GMAIL_TOKEN_FILE;
+  if (raw && raw !== "" && !raw.startsWith("${")) {
+    // Absolute path already — use as-is (no tilde expansion needed)
+    if (path.isAbsolute(raw)) return raw;
+    // Relative tilde path — expand properly via os.homedir()
+    if (raw.startsWith("~")) return path.join(os.homedir(), raw.slice(1));
+    return raw;
+  }
+  // Default: ~/.freecode/.gmail-token.json via os.homedir() (cross-platform, no USERPROFILE fragility)
+  return path.join(os.homedir(), ".freecode", ".gmail-token.json");
 }
 
 async function getToken() {
@@ -58,7 +69,10 @@ async function getToken() {
 }
 
 async function saveToken(token) {
-  await writeFileAsync(getTokenPath(), JSON.stringify(token, null, 2));
+  const tokenPath = getTokenPath();
+  // Ensure parent directory exists before writing — fresh installs may not have ~/.freecode/
+  await mkdirAsync(path.dirname(tokenPath), { recursive: true });
+  await writeFileAsync(tokenPath, JSON.stringify(token, null, 2));
 }
 
 // --- Gmail API Client ---
@@ -69,29 +83,34 @@ const CLIENT_ID = process.env.GMAIL_CLIENT_ID || "";
 const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET || "";
 const REDIRECT_URI = process.env.GMAIL_REDIRECT_URI || "http://localhost:41122";
 
+// Returns the valid (possibly refreshed) token, or null if not authenticated.
 async function ensureAuthenticated() {
   const token = await getToken();
-  if (!token || token.expiry_time < Date.now() / 1000) {
-    if (token && token.refresh_token) {
-      const res = await fetch(TOKEN_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          client_id: CLIENT_ID,
-          client_secret: CLIENT_SECRET,
-          grant_type: "refresh_token",
-          refresh_token: token.refresh_token,
-        }),
-      });
-      const newToken = await res.json();
-      newToken.expiry_time = Date.now() / 1000 + newToken.expires_in;
-      newToken.refresh_token = token.refresh_token;
-      await saveToken(newToken);
-      return true;
+  if (!token) return null;
+  // Refresh 60 seconds before actual expiry to avoid races
+  if (token.expiry_time && token.expiry_time - 60 < Date.now() / 1000) {
+    if (!token.refresh_token) return null;
+    const res = await fetch(TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        client_id: CLIENT_ID,
+        client_secret: CLIENT_SECRET,
+        grant_type: "refresh_token",
+        refresh_token: token.refresh_token,
+      }),
+    });
+    const newToken = await res.json();
+    if (!newToken.access_token) {
+      process.stderr.write(`[gmail] Token refresh failed: ${JSON.stringify(newToken)}\n`);
+      return null;
     }
-    return false;
+    newToken.expiry_time = Date.now() / 1000 + (newToken.expires_in || 3600);
+    newToken.refresh_token = token.refresh_token; // refresh_token not always returned
+    await saveToken(newToken);
+    return newToken;
   }
-  return true;
+  return token;
 }
 
 function getAuthUrl() {
@@ -207,9 +226,12 @@ function startCallbackServer() {
   callbackServer = server;
 }
 
-async function gmailRequest(method, path, body) {
-  const token = await getToken();
-  const url = `${GMAIL_API}${path}`;
+async function gmailRequest(method, apiPath, body) {
+  // Always go through ensureAuthenticated so the token is refreshed if needed.
+  // Calling getToken() directly here would serve a stale access_token after 1 hour.
+  const token = await ensureAuthenticated();
+  if (!token) throw new Error("Not authenticated — call auth_gmail first.");
+  const url = `${GMAIL_API}${apiPath}`;
   const opts = {
     method,
     headers: {
@@ -288,15 +310,25 @@ function getMessageBody(payload) {
 
 // --- Tool Implementations ---
 
-const unauthMsg = { content: [{ type: "text", text: "Not authenticated with Gmail. Call auth_gmail to get the authorization URL, complete the browser flow, then call auth_gmail_exchange_code with the code." }] };
+const UNAUTH_TEXT = "Not authenticated with Gmail. Call auth_gmail to get the authorization URL, open it in your browser, and complete the OAuth flow. The token will be saved automatically. Then call gmail_auth_status to confirm it worked before using other tools.";
+
+function unauthMsg() {
+  return { content: [{ type: "text", text: UNAUTH_TEXT }] };
+}
 
 const tools = {
   auth_gmail: {
-    description: "Get the OAuth authorization URL for Gmail. Open this URL in your browser and authorize the app. The redirect will be captured automatically and your token saved; if that fails, copy the authorization code from the redirect URL and pass it to auth_gmail_exchange_code.",
+    description: "Get the OAuth authorization URL for Gmail. Open this URL in your browser and authorize the app. The redirect will be captured automatically on port 41122 and your token saved. After authorizing, call gmail_auth_status to confirm. If the automatic capture fails, copy the 'code' query parameter from the redirect URL and pass it to auth_gmail_exchange_code.",
     parameters: {},
     handler: async () => {
+      // Callback server is started at process boot, but restart it here in case
+      // it died or the port was not available at startup.
       startCallbackServer();
-      return { content: [{ type: "text", text: `Open this URL in your browser to authorize Gmail access:\n\n${getAuthUrl()}\n\nAfter authorizing, the browser will be redirected back and your token will be saved automatically. If the page shows an error instead of a confirmation, copy the 'code' parameter from the redirect URL and pass it to the auth_gmail_exchange_code tool.` }] };
+      const existing = await ensureAuthenticated();
+      if (existing) {
+        return { content: [{ type: "text", text: `Already authenticated with Gmail (token valid). You can use Gmail tools directly. To re-authenticate, call auth_gmail_exchange_code with a fresh code.\n\nFresh auth URL (if needed):\n${getAuthUrl()}` }] };
+      }
+      return { content: [{ type: "text", text: `Open this URL in your browser to authorize Gmail access:\n\n${getAuthUrl()}\n\nAfter authorizing, call gmail_auth_status to confirm the token was saved. If the page shows an error instead of the confirmation page, copy the 'code' parameter from the redirect URL and pass it to auth_gmail_exchange_code.` }] };
     },
   },
 
@@ -313,6 +345,21 @@ const tools = {
     },
   },
 
+  gmail_auth_status: {
+    description: "Check whether Gmail authentication is active and the stored token is valid. Call this after auth_gmail to confirm the token was saved before using other Gmail tools.",
+    parameters: {},
+    handler: async () => {
+      const token = await ensureAuthenticated();
+      if (!token) {
+        return { content: [{ type: "text", text: `Not authenticated.\n\nToken file: ${getTokenPath()}\nStatus: no valid token found.\n\nCall auth_gmail to start the OAuth flow.` }] };
+      }
+      const expiresIn = token.expiry_time ? Math.round(token.expiry_time - Date.now() / 1000) : null;
+      const expiryStr = expiresIn !== null ? `expires in ${expiresIn}s` : "no expiry recorded";
+      const hasRefresh = Boolean(token.refresh_token);
+      return { content: [{ type: "text", text: `Authenticated with Gmail.\nToken file: ${getTokenPath()}\nAccess token: present (${expiryStr})\nRefresh token: ${hasRefresh ? "present (auto-refresh enabled)" : "missing — re-auth needed after expiry"}\n\nYou can use Gmail tools now.` }] };
+    },
+  },
+
   gmail_read_inbox: {
     description: "List recent messages in your inbox. Supports filtering by sender, recipient, subject, and labels.",
     parameters: {
@@ -320,7 +367,7 @@ const tools = {
       query: { type: "string", description: 'Search query (e.g., "from:alice@example.com is:unread")' },
     },
     handler: async ({ maxResults, query }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const qs = new URLSearchParams({ maxResults: maxResults || "20", q: query || "", includeSpamTrash: "false" });
       const data = await gmailRequest("GET", `/users/me/messages?${qs}`);
       const messages = data.messages || [];
@@ -346,7 +393,7 @@ const tools = {
     description: "Read a full email message by its ID. Returns headers, body, and snippet.",
     parameters: { messageId: { type: "string", description: "The Gmail message ID to read" } },
     handler: async ({ messageId }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const msg = await gmailRequest("GET", `/users/me/messages/${messageId}`);
       const from = getHeader(msg.payload, "From");
       const to = getHeader(msg.payload, "To");
@@ -364,7 +411,7 @@ const tools = {
       maxResults: { type: "string", description: "Max results (default: 20)", default: "20" },
     },
     handler: async ({ query, maxResults }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const qs = new URLSearchParams({ maxResults: maxResults || "20", q: query || "", includeSpamTrash: "false" });
       const data = await gmailRequest("GET", `/users/me/messages?${qs}`);
       const messages = data.messages || [];
@@ -389,7 +436,7 @@ const tools = {
       replyTo: { type: "string", description: "Reply-To address (optional)" },
     },
     handler: async ({ to, subject, body, html, cc, replyTo }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const fromAddress = process.env.GMAIL_FROM_ADDRESS || "";
       const raw = encodeMimeMessage(fromAddress || "me", to, subject, body, html || false, replyTo || null, cc || null);
       const sent = await gmailRequest("POST", `/users/me/messages/send`, { raw });
@@ -406,7 +453,7 @@ const tools = {
       html: { type: "boolean", description: "Set to true for HTML body", default: false },
     },
     handler: async ({ to, subject, body, html }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const raw = encodeMimeMessage("", to, subject, body, html || false);
       const draft = await gmailRequest("POST", `/users/me/drafts`, { raw });
       return { content: [{ type: "text", text: `Draft created successfully.\nDraft ID: ${draft.id}\nMessage ID: ${draft.message?.id}` }] };
@@ -420,7 +467,7 @@ const tools = {
       body: { type: "string", description: "Reply body text" },
     },
     handler: async ({ threadId, body }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const thread = await gmailRequest("GET", `/users/me/threads/${threadId}`);
       const lastMsg = thread.messages[thread.messages.length - 1];
       const from = getHeader(lastMsg.payload, "From");
@@ -435,7 +482,7 @@ const tools = {
     description: "List all labels in your Gmail account.",
     parameters: {},
     handler: async () => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const labels = await gmailRequest("GET", `/users/me/labels`);
       return { content: [{ type: "text", text: `Labels (${labels.labels?.length || 0}):\n${(labels.labels || []).map(l => `  ${l.id} - ${l.name} (messages: ${l.messageCount})`).join("\n")}` }] };
     },
@@ -449,7 +496,7 @@ const tools = {
       removeLabels: { type: "string", description: "Comma-separated label names to remove" },
     },
     handler: async ({ messageId, addLabels, removeLabels }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const body = {};
       if (addLabels) body.addLabelIds = addLabels.split(",").map(s => s.trim());
       if (removeLabels) body.removeLabelIds = removeLabels.split(",").map(s => s.trim());
@@ -462,7 +509,7 @@ const tools = {
     description: "Permanently delete a message (move to Trash).",
     parameters: { messageId: { type: "string", description: "The message ID to delete" } },
     handler: async ({ messageId }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       await gmailRequest("DELETE", `/users/me/messages/${messageId}`);
       return { content: [{ type: "text", text: `Message ${messageId} moved to Trash.` }] };
     },
@@ -475,7 +522,7 @@ const tools = {
       markRead: { type: "boolean", description: "true to mark as read, false to mark as unread", default: true },
     },
     handler: async ({ messageId, markRead }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const body = markRead ? { removeLabelIds: ["UNREAD"] } : { addLabelIds: ["UNREAD"] };
       await gmailRequest("PUT", `/users/me/messages/${messageId}/modify`, body);
       return { content: [{ type: "text", text: `Message ${messageId} marked as ${markRead ? "read" : "unread"}.` }] };
@@ -486,7 +533,7 @@ const tools = {
     description: "Get the full conversation thread for a given thread ID.",
     parameters: { threadId: { type: "string", description: "The Gmail thread ID" } },
     handler: async ({ threadId }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const thread = await gmailRequest("GET", `/users/me/threads/${threadId}`);
       const messages = thread.messages || [];
       const summary = messages.map((m, i) => {
@@ -508,7 +555,7 @@ const tools = {
       cc: { type: "string", description: "CC recipients (optional)" },
     },
     handler: async ({ to, subject, htmlBody, cc }) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
       const raw = encodeMimeMessage("", to, subject, htmlBody, true, null, cc || null);
       const sent = await gmailRequest("POST", `/users/me/messages/send`, { raw });
       return { content: [{ type: "text", text: `HTML email sent successfully.\nMessage ID: ${sent.id}` }] };
@@ -662,7 +709,7 @@ function apiTool(route) {
     description: `Gmail API ${route.resource}.${route.methodName} (${route.http} ${route.path})`,
     parameters,
     handler: async (args = {}) => {
-      if (!(await ensureAuthenticated())) return unauthMsg;
+      if (!(await ensureAuthenticated())) return unauthMsg();
 
       let path = route.path.replace("{userId}", encodeURIComponent(args.userId || "me"));
       for (const p of pathParams) {
@@ -691,10 +738,15 @@ for (const route of ROUTES) {
   tools[routeToolName(route)] = apiTool(route);
 }
 
-module.exports = { tools, ROUTES, routeToolName };
+module.exports = { tools, ROUTES, routeToolName, startCallbackServer };
 
 // --- JSON-RPC Server (raw stdio) ---
 if (require.main === module) {
+
+// Start the OAuth callback server immediately at boot so it's ready when
+// Google redirects the browser — even if auth_gmail was called in a previous
+// MCP process invocation that has since restarted.
+startCallbackServer();
 
 const readline = require("readline");
 const rl = readline.createInterface({ input: process.stdin });
