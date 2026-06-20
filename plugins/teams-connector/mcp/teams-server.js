@@ -32,15 +32,28 @@
  *   5. Call auth_teams tool to begin OAuth flow
  */
 
-const { readFile, writeFile } = require("fs");
+const { readFile, writeFile, mkdir } = require("fs");
 const { promisify } = require("util");
+const os = require("os");
+const path = require("path");
 const http = require("http");
 const { URL } = require("url");
 
 const readFileAsync = promisify(readFile);
 const writeFileAsync = promisify(writeFile);
+const mkdirAsync = promisify(mkdir);
 
 const REDIRECT_URI = process.env.TEAMS_REDIRECT_URI || "http://localhost:3421/callback";
+
+function getTokenPath() {
+  const raw = process.env.TEAMS_TOKEN_FILE;
+  if (raw && raw !== "" && !raw.startsWith("${")) {
+    if (path.isAbsolute(raw)) return raw;
+    if (raw.startsWith("~")) return path.join(os.homedir(), raw.slice(1));
+    return raw;
+  }
+  return path.join(os.homedir(), ".freecode", ".teams-token.json");
+}
 
 // --- OAuth redirect callback server ---
 //
@@ -119,20 +132,14 @@ function startCallbackServer(redirectUri, exchangeFn) {
 // --- OAuth Token Management ---
 
 async function getToken() {
-  const tokenFile = process.env.TEAMS_TOKEN_FILE || "~/.freecode/.teams-token.json";
-  const resolvedPath = tokenFile.startsWith("~") ? (process.env.HOME || process.env.USERPROFILE || "") + tokenFile.slice(1) : tokenFile;
-  try {
-    const data = await readFileAsync(resolvedPath, "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return null;
-  }
+  try { return JSON.parse(await readFileAsync(getTokenPath(), "utf-8")); }
+  catch { return null; }
 }
 
 async function saveToken(token) {
-  const tokenFile = process.env.TEAMS_TOKEN_FILE || "~/.freecode/.teams-token.json";
-  const resolvedPath = tokenFile.startsWith("~") ? (process.env.HOME || process.env.USERPROFILE || "") + tokenFile.slice(1) : tokenFile;
-  await writeFileAsync(resolvedPath, JSON.stringify(token, null, 2));
+  const p = getTokenPath();
+  await mkdirAsync(path.dirname(p), { recursive: true });
+  await writeFileAsync(p, JSON.stringify(token, null, 2));
 }
 
 // --- Microsoft Graph API Client ---
@@ -149,12 +156,11 @@ class TeamsClient {
 
   async ensureAuthenticated() {
     this.token = await getToken();
-    if (!this.token || Date.now() / 1000 > this.token.expires_in) {
-      if (this.token) {
-        await this.refreshToken();
-        return true;
-      }
-      return false;
+    if (!this.token) return false;
+    // expiry_time stored as epoch seconds; refresh 60s before actual expiry
+    if (this.token.expiry_time && this.token.expiry_time - 60 < Date.now() / 1000) {
+      if (!this.token.refresh_token) return false;
+      try { await this.refreshToken(); } catch { return false; }
     }
     return true;
   }
@@ -192,7 +198,7 @@ class TeamsClient {
     });
     const data = await response.json();
     if (data.access_token) {
-      data.expires_in = Date.now() / 1000 + (data.expires_in || 3600);
+      data.expiry_time = Date.now() / 1000 + (data.expires_in || 3600);
       this.token = data;
       await saveToken(data);
       return data;
@@ -333,19 +339,27 @@ const unauthMsg = {
 
 defTool(
   "auth_teams",
-  "Get the OAuth authorization URL for Microsoft Teams. Open this URL in your browser and authorize the app. The redirect will be captured automatically and your token saved; if that fails, copy the authorization code from the redirect URL and pass it to auth_teams_exchange_code.",
+  "Get the OAuth authorization URL for Microsoft Teams. Open this URL in your browser and authorize. The redirect is captured automatically. After authorizing, call teams_auth_status to confirm. If capture fails, copy the 'code' param and pass it to auth_teams_exchange_code.",
   {},
   async () => {
-    const authUrl = teams.getAuthUrl();
     startCallbackServer(REDIRECT_URI, (code) => teams.exchangeCode(code));
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Open this URL in your browser to authorize Microsoft Teams access:\n\n${authUrl}\n\nAfter authorizing, the browser will be redirected back and your token will be saved automatically. If the page shows an error instead of a confirmation, copy the 'code' parameter from the redirect URL and pass it to the auth_teams_exchange_code tool.`,
-        },
-      ],
-    };
+    if (await teams.ensureAuthenticated()) {
+      return { content: [{ type: "text", text: `Already authenticated with Teams. Call teams_auth_status to verify.\n\nFresh auth URL (if needed):\n${teams.getAuthUrl()}` }] };
+    }
+    return { content: [{ type: "text", text: `Open this URL in your browser to authorize Microsoft Teams access:\n\n${teams.getAuthUrl()}\n\nAfter authorizing, call teams_auth_status to confirm the token was saved.` }] };
+  }
+);
+
+defTool(
+  "teams_auth_status",
+  "Check whether Microsoft Teams authentication is active and the stored token is valid. Call this after auth_teams to confirm before using other tools.",
+  {},
+  async () => {
+    const t = await getToken();
+    if (!t) return { content: [{ type: "text", text: `Not authenticated.\nToken file: ${getTokenPath()}\nCall auth_teams to start the OAuth flow.` }] };
+    const expiresIn = t.expiry_time ? Math.round(t.expiry_time - Date.now() / 1000) : null;
+    const expiryStr = expiresIn !== null ? `expires in ${expiresIn}s` : "no expiry recorded";
+    return { content: [{ type: "text", text: `Authenticated with Microsoft Teams.\nToken file: ${getTokenPath()}\nAccess token: present (${expiryStr})\nRefresh token: ${t.refresh_token ? "present" : "missing"}\n\nYou can use Teams tools now.` }] };
   }
 );
 
@@ -575,6 +589,9 @@ async function handleRequest(msg) {
 
   return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown method: ${msg.method}` } };
 }
+
+// Start callback server at boot so redirect is caught even if process restarted.
+startCallbackServer(REDIRECT_URI, (code) => teams.exchangeCode(code));
 
 // Read stdin line by line
 const readline = require("readline");

@@ -24,6 +24,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const os = require("os");
 const http = require("http");
 const { URL } = require("url");
 
@@ -31,9 +32,16 @@ const { URL } = require("url");
 const CLIENT_ID = process.env.CALENDAR_CLIENT_ID || "";
 const CLIENT_SECRET = process.env.CALENDAR_CLIENT_SECRET || "";
 const REDIRECT_URI = process.env.CALENDAR_REDIRECT_URI || "http://localhost:41123";
-const TOKEN_FILE = path.resolve(
-  process.env.CALENDAR_TOKEN_FILE || "~/.freecode/.calendar-token.json"
-);
+
+function getTokenFile() {
+  const raw = process.env.CALENDAR_TOKEN_FILE;
+  if (raw && raw !== "" && !raw.startsWith("${")) {
+    if (path.isAbsolute(raw)) return raw;
+    if (raw.startsWith("~")) return path.join(os.homedir(), raw.slice(1));
+    return raw;
+  }
+  return path.join(os.homedir(), ".freecode", ".calendar-token.json");
+}
 const CALENDAR_API = "https://www.googleapis.com/calendar/v3";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth";
@@ -121,9 +129,8 @@ class CalendarClient {
 
   loadTokens() {
     try {
-      if (fs.existsSync(TOKEN_FILE)) {
-        return JSON.parse(fs.readFileSync(TOKEN_FILE, "utf-8"));
-      }
+      const p = getTokenFile();
+      if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, "utf-8"));
     } catch (e) {
       console.error("Failed to load token file:", e.message);
     }
@@ -132,7 +139,9 @@ class CalendarClient {
 
   saveTokens(t) {
     try {
-      fs.writeFileSync(TOKEN_FILE, JSON.stringify(t, null, 2), "utf-8");
+      const p = getTokenFile();
+      fs.mkdirSync(path.dirname(p), { recursive: true });
+      fs.writeFileSync(p, JSON.stringify(t, null, 2), "utf-8");
     } catch (e) {
       console.error("Failed to save token:", e.message);
     }
@@ -271,19 +280,27 @@ function defTool(name, desc, params, handler) {
 
 defTool(
   "auth_calendar",
-  "Get the OAuth authorization URL for Google Calendar. Open this URL in your browser and authorize the app. The redirect will be captured automatically and your token saved; if that fails, copy the authorization code from the redirect URL and pass it to auth_calendar_exchange_code.",
+  "Get the OAuth authorization URL for Google Calendar. Open this URL in your browser and authorize. The redirect is captured automatically on the callback port. After authorizing, call calendar_auth_status to confirm. If capture fails, copy the 'code' param and pass it to auth_calendar_exchange_code.",
   {},
   async () => {
-    const authUrl = calendar.getAuthUrl();
     startCallbackServer(REDIRECT_URI, (code) => calendar.exchangeCode(code));
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Open this URL in your browser to authorize Google Calendar access:\n\n${authUrl}\n\nAfter authorizing, the browser will be redirected back and your token will be saved automatically. If the page shows an error instead of a confirmation, copy the 'code' parameter from the redirect URL and pass it to the auth_calendar_exchange_code tool.`,
-        },
-      ],
-    };
+    if (await calendar.ensureAuthenticated()) {
+      return { content: [{ type: "text", text: `Already authenticated with Google Calendar. Call calendar_auth_status to verify.\n\nFresh auth URL (if needed):\n${calendar.getAuthUrl()}` }] };
+    }
+    return { content: [{ type: "text", text: `Open this URL in your browser to authorize Google Calendar access:\n\n${calendar.getAuthUrl()}\n\nAfter authorizing, call calendar_auth_status to confirm the token was saved.` }] };
+  }
+);
+
+defTool(
+  "calendar_auth_status",
+  "Check whether Google Calendar authentication is active and the stored token is valid. Call this after auth_calendar to confirm before using other tools.",
+  {},
+  async () => {
+    const t = calendar.tokens || calendar.loadTokens();
+    if (!t) return { content: [{ type: "text", text: `Not authenticated.\nToken file: ${getTokenFile()}\nCall auth_calendar to start the OAuth flow.` }] };
+    const expiresIn = t.expiry_time ? Math.round((t.expiry_time - Date.now()) / 1000) : null;
+    const expiryStr = expiresIn !== null ? `expires in ${expiresIn}s` : "no expiry recorded";
+    return { content: [{ type: "text", text: `Authenticated with Google Calendar.\nToken file: ${getTokenFile()}\nAccess token: present (${expiryStr})\nRefresh token: ${t.refresh_token ? "present" : "missing"}\n\nYou can use Calendar tools now.` }] };
   }
 );
 
@@ -739,6 +756,10 @@ async function handleRequest(msg) {
 
   return { jsonrpc: "2.0", id, error: { code: -32601, message: `Unknown method: ${msg.method}` } };
 }
+
+// Start callback server at boot so Google's redirect is caught even if the
+// process restarted between auth_calendar being called and the browser redirect.
+startCallbackServer(REDIRECT_URI, (code) => calendar.exchangeCode(code));
 
 // Read stdin line by line
 const readline = require("readline");
