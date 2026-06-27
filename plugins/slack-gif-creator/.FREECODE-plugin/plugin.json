@@ -1,0 +1,13 @@
+{
+  "name": "slack-gif-creator",
+  "version": "1.0.0",
+  "description": "Create polished animated GIFs with text, transitions, and easing — optimized for Slack and other chat platforms.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["gif", "animation", "slack", "animated-gif", "text-animation", "transitions"],
+  "category": "creative"
+}

@@ -1,8 +1,13 @@
 {
   "name": "skill-creator",
-  "description": "Create new skills, improve existing skills, and measure skill performance. Use when users want to create a skill from scratch, update or optimize an existing skill, run evals to test a skill, or benchmark skill performance with variance analysis.",
+  "version": "1.0.0",
+  "description": "Interactive skill scaffolding wizard — generate complete FreeCode skills with SKILL.md, hooks, scripts, templates, and commands.",
   "author": {
     "name": "FreeCode",
-    "email": "support@freecode.com"
-  }
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["skill", "scaffold", "create-skill", "plugin-authoring", "SKILL.md"],
+  "category": "tooling"
 }

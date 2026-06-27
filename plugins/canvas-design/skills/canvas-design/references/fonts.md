@@ -141,6 +141,11 @@ YoungSerif-Regular.ttf
 
 ---
 
+## Font Format Note
+
+Fonts are stored as `.woff2` internally but named with `.ttf` extensions for familiarity.
+PIL's `ImageFont.truetype()` accepts `.woff2` files directly, so they work seamlessly.
+
 ## Usage
 
 ```python
