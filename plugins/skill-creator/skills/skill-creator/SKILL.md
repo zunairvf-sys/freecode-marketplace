@@ -7,6 +7,57 @@ description: Create new skills, modify and improve existing skills, and measure 
 
 A skill for creating new skills and iteratively improving them.
 
+## File Locations
+
+This skill is installed under the FreeCode plugins directory. All bundled resources are relative to the skill directory:
+
+```
+~/.freecode/plugins/skill-creator/
+├── .FREECODE-plugin/
+│   └── plugin.json
+├── LICENSE
+├── README.md
+└── skills/
+    └── skill-creator/
+        ├── SKILL.md                ← This file
+        ├── LICENSE.txt
+        ├── agents/
+        │   ├── analyzer.md         ← How to analyze benchmark results
+        │   ├── comparator.md       ← How to do blind A/B comparison
+        │   └── grader.md           ← How to evaluate assertions
+        ├── assets/
+        │   └── eval_review.html    ← HTML template for eval review UI
+        ├── eval-viewer/
+        │   ├── generate_review.py  ← Script to generate eval viewer
+        │   └── viewer.html         ← Eval viewer HTML template
+        ├── references/
+        │   └── schemas.md          ← JSON schemas for evals, grading, etc.
+        └── scripts/
+            ├── aggregate_benchmark.py  ← Aggregate benchmark results
+            ├── generate_report.py      ← Generate benchmark reports
+            ├── improve_description.py  ← Optimize skill descriptions
+            ├── package_skill.py        ← Package skill into .skill file
+            ├── quick_validate.py       ← Quick skill validation
+            ├── run_eval.py             ← Run eval test cases
+            ├── run_loop.py             ← Description optimization loop
+            └── utils.py                ← Shared utilities
+```
+
+**Important:** When running scripts or importing modules, use the full path:
+```bash
+python ~/.freecode/plugins/skill-creator/skills/skill-creator/scripts/package_skill.py <path/to/skill>
+```
+
+On Windows:
+```bash
+python C:\Users\<username>\.freecode\plugins\skill-creator\skills\skill-creator\scripts\package_skill.py <path>
+```
+
+For the eval viewer:
+```bash
+python ~/.freecode/plugins/skill-creator/skills/skill-creator/eval-viewer/generate_review.py <workspace> --skill-name "my-skill"
+```
+
 At a high level, the process of creating a skill goes like this:
 
 - Decide what you want the skill to do and roughly how it should do it
