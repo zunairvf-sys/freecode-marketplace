@@ -1,15 +1,17 @@
 {
-  "SessionStart": [
-    {
-      "matcher": "*",
-      "hooks": [
-        {
-          "type": "prompt",
-          "prompt": "Check if the user has mentioned 'email', 'gmail', 'inbox', or 'send' in their current request. If yes, respond with: 'Gmail connector is available. Use /gmail-inbox to read email or /gmail-compose to send email.' If no, respond with empty.",
-          "async": true,
-          "timeout": 5
-        }
-      ]
-    }
-  ]
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Check if the user has mentioned 'email', 'gmail', 'inbox', or 'send' in their current request. If yes, respond with: 'Gmail connector is available. Use /gmail-inbox to read email or /gmail-compose to send email.' If no, respond with empty.",
+            "async": true,
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
 }

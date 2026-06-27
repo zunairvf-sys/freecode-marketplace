@@ -1,0 +1,13 @@
+{
+  "name": "algorithmic-art",
+  "version": "1.0.0",
+  "description": "Generative algorithmic art creation with p5.js — interactive HTML artifacts with seed controls and parameter exploration.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["generative-art", "algorithmic-art", "p5.js", "creative-coding", "visual-art"],
+  "category": "creative"
+}

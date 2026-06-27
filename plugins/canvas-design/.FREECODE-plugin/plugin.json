@@ -1,0 +1,13 @@
+{
+  "name": "canvas-design",
+  "version": "1.0.0",
+  "description": "Create visual designs, posters, and social media graphics as PNG or PDF using Python Pillow with bundled fonts.",
+  "author": {
+    "name": "FreeCode",
+    "url": "https://freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["canvas", "design", "poster", "visual-art", "Pillow", "Python", "graphics", "social-media"],
+  "category": "creative"
+}
