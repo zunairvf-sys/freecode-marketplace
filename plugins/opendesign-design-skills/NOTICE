@@ -1,0 +1,20 @@
+opendesign-design-skills
+=========================
+
+This plugin contains design skills adapted from the Open Design project
+(nexu-io/open-design), licensed under the Apache License, Version 2.0.
+
+  Copyright (c) Open Design contributors.
+  https://github.com/nexu-io/open-design
+  Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Changes made in this distribution:
+  - Removed the `od:` frontmatter block (host-specific mode/surface/preview
+    and daemon-capability metadata) from each SKILL.md.
+  - Rewrote host-specific product references to FreeCode.
+  - Excluded host-locked skills (custom question-form "atoms", daemon-IPC
+    "scenarios", and video-template preview modes) that cannot run outside
+    the original host, plus Open Design's own company/pitch skills.
+
+The `name`, `description`, `triggers`, and design guidance in each skill are
+retained. See LICENSE for the full Apache-2.0 text and attribution terms.

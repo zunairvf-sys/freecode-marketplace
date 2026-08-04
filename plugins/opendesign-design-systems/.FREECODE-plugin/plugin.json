@@ -1,0 +1,8 @@
+{
+  "name": "opendesign-design-systems",
+  "description": "151 portable design-system packages (manifest.json + DESIGN.md + tokens.css) spanning SaaS, editorial, brutalist, fintech, themed and more. Adapted from the Apache-2.0 Open Design catalog. Selecting one composes its design context + tokens into FreeCode generation for on-brand, high-craft output.",
+  "author": {
+    "name": "FreeCode",
+    "email": "support@freecode.ai"
+  }
+}

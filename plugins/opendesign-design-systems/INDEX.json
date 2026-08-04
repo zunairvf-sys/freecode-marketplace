@@ -1,0 +1,908 @@
+[
+  {
+    "id": "claude",
+    "name": "Claude (Anthropic)",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for Claude (Anthropic), derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "cohere",
+    "name": "Cohere",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for Cohere, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "elevenlabs",
+    "name": "ElevenLabs",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for ElevenLabs, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "huggingface",
+    "name": "Hugging Face",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for Hugging Face, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "minimax",
+    "name": "MiniMax",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for MiniMax, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "mistral-ai",
+    "name": "Mistral AI",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for Mistral AI, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "ollama",
+    "name": "Ollama",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for Ollama, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "openai",
+    "name": "OpenAI",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for OpenAI, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "opencode-ai",
+    "name": "OpenCode",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for OpenCode, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "perplexity",
+    "name": "Perplexity AI",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for Perplexity AI, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "replicate",
+    "name": "Replicate",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for Replicate, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "runwayml",
+    "name": "Runway",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for Runway, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "together-ai",
+    "name": "Together AI",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for Together AI, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "voltagent",
+    "name": "VoltAgent",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for VoltAgent, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "x-ai",
+    "name": "xAI",
+    "category": "AI & LLM",
+    "description": "Bundled FreeCode package for xAI, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "bmw",
+    "name": "BMW",
+    "category": "Automotive",
+    "description": "Bundled FreeCode package for BMW, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "bmw-m",
+    "name": "BMW M",
+    "category": "Automotive",
+    "description": "Bundled FreeCode package for BMW M, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "bugatti",
+    "name": "Bugatti",
+    "category": "Automotive",
+    "description": "Bundled FreeCode package for Bugatti, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "ferrari",
+    "name": "Ferrari",
+    "category": "Automotive",
+    "description": "Bundled FreeCode package for Ferrari, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "lamborghini",
+    "name": "Lamborghini",
+    "category": "Automotive",
+    "description": "Bundled FreeCode package for Lamborghini, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "renault",
+    "name": "Renault",
+    "category": "Automotive",
+    "description": "Bundled FreeCode package for Renault, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "tesla",
+    "name": "Tesla",
+    "category": "Automotive",
+    "description": "Bundled FreeCode package for Tesla, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "cisco",
+    "name": "Cisco",
+    "category": "Backend & Data",
+    "description": "Bundled FreeCode package for Cisco, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "clickhouse",
+    "name": "ClickHouse",
+    "category": "Backend & Data",
+    "description": "Bundled FreeCode package for ClickHouse, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "composio",
+    "name": "Composio",
+    "category": "Backend & Data",
+    "description": "Bundled FreeCode package for Composio, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "hashicorp",
+    "name": "HashiCorp",
+    "category": "Backend & Data",
+    "description": "Bundled FreeCode package for HashiCorp, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "mongodb",
+    "name": "MongoDB",
+    "category": "Backend & Data",
+    "description": "Bundled FreeCode package for MongoDB, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "posthog",
+    "name": "PostHog",
+    "category": "Backend & Data",
+    "description": "Bundled FreeCode package for PostHog, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "sanity",
+    "name": "Sanity",
+    "category": "Backend & Data",
+    "description": "Bundled FreeCode package for Sanity, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "sentry",
+    "name": "Sentry",
+    "category": "Backend & Data",
+    "description": "Bundled FreeCode package for Sentry, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "supabase",
+    "name": "Supabase",
+    "category": "Backend & Data",
+    "description": "Bundled FreeCode package for Supabase, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "bold",
+    "name": "Bold",
+    "category": "Bold & Expressive",
+    "description": "Bundled FreeCode package for Bold, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "brutalism",
+    "name": "Brutalism",
+    "category": "Bold & Expressive",
+    "description": "Bundled FreeCode package for Brutalism, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "colorful",
+    "name": "Colorful",
+    "category": "Bold & Expressive",
+    "description": "Bundled FreeCode package for Colorful, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "dramatic",
+    "name": "Dramatic",
+    "category": "Bold & Expressive",
+    "description": "Bundled FreeCode package for Dramatic, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "energetic",
+    "name": "Energetic",
+    "category": "Bold & Expressive",
+    "description": "Bundled FreeCode package for Energetic, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "expressive",
+    "name": "Expressive",
+    "category": "Bold & Expressive",
+    "description": "Bundled FreeCode package for Expressive, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "neobrutalism",
+    "name": "Neobrutalism",
+    "category": "Bold & Expressive",
+    "description": "Bundled FreeCode package for Neobrutalism, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "vibrant",
+    "name": "Vibrant",
+    "category": "Bold & Expressive",
+    "description": "Bundled FreeCode package for Vibrant, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "artistic",
+    "name": "Artistic",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Artistic, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "cafe",
+    "name": "Cafe",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Cafe, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "cosmic",
+    "name": "Cosmic",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Cosmic, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "creative",
+    "name": "Creative",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Creative, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "doodle",
+    "name": "Doodle",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Doodle, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "editorial",
+    "name": "Editorial",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Editorial, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "fantasy",
+    "name": "Fantasy",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Fantasy, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "friendly",
+    "name": "Friendly",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Friendly, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "lingo",
+    "name": "Lingo",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Lingo, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "publication",
+    "name": "Publication",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Publication, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "storytelling",
+    "name": "Storytelling",
+    "category": "Creative & Artistic",
+    "description": "Bundled FreeCode package for Storytelling, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "airtable",
+    "name": "Airtable",
+    "category": "Design & Creative",
+    "description": "Bundled FreeCode package for Airtable, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "canva",
+    "name": "Canva",
+    "category": "Design & Creative",
+    "description": "Bundled FreeCode package for Canva, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "clay",
+    "name": "Clay",
+    "category": "Design & Creative",
+    "description": "Bundled FreeCode package for Clay, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "figma",
+    "name": "Figma",
+    "category": "Design & Creative",
+    "description": "Bundled FreeCode package for Figma, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "framer",
+    "name": "Framer",
+    "category": "Design & Creative",
+    "description": "Bundled FreeCode package for Framer, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "miro",
+    "name": "Miro",
+    "category": "Design & Creative",
+    "description": "Bundled FreeCode package for Miro, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "webflow",
+    "name": "Webflow",
+    "category": "Design & Creative",
+    "description": "Bundled FreeCode package for Webflow, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "cursor",
+    "name": "Cursor",
+    "category": "Developer Tools",
+    "description": "Bundled FreeCode package for Cursor, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "expo",
+    "name": "Expo",
+    "category": "Developer Tools",
+    "description": "Bundled FreeCode package for Expo, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "github",
+    "name": "GitHub",
+    "category": "Developer Tools",
+    "description": "Bundled FreeCode package for GitHub, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "lovable",
+    "name": "Lovable",
+    "category": "Developer Tools",
+    "description": "Bundled FreeCode package for Lovable, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "mission-control",
+    "name": "Mission Control Design System",
+    "category": "Developer Tools",
+    "description": "Bundled FreeCode package for Mission Control Design System, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "raycast",
+    "name": "Raycast",
+    "category": "Developer Tools",
+    "description": "Bundled FreeCode package for Raycast, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "superhuman",
+    "name": "Superhuman",
+    "category": "Developer Tools",
+    "description": "Bundled FreeCode package for Superhuman, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "vercel",
+    "name": "Vercel",
+    "category": "Developer Tools",
+    "description": "Bundled FreeCode package for Vercel, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "warp",
+    "name": "Warp",
+    "category": "Developer Tools",
+    "description": "Bundled FreeCode package for Warp, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "airbnb",
+    "name": "Airbnb",
+    "category": "E-Commerce & Retail",
+    "description": "Bundled FreeCode package for Airbnb, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "meta",
+    "name": "Meta (Store)",
+    "category": "E-Commerce & Retail",
+    "description": "Bundled FreeCode package for Meta (Store), derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "nike",
+    "name": "Nike",
+    "category": "E-Commerce & Retail",
+    "description": "Bundled FreeCode package for Nike, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "shopify",
+    "name": "Shopify",
+    "category": "E-Commerce & Retail",
+    "description": "Bundled FreeCode package for Shopify, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "starbucks",
+    "name": "Starbucks",
+    "category": "E-Commerce & Retail",
+    "description": "Bundled FreeCode package for Starbucks, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "atelier-zero",
+    "name": "Atelier Zero",
+    "category": "Editorial · Studio",
+    "description": "Bundled FreeCode package for Atelier Zero, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "urdu",
+    "name": "Urdu Modern (Indus Script System)",
+    "category": "Editorial / Personal / Publication",
+    "description": "Bundled FreeCode package for Urdu Modern (Indus Script System), derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "kami",
+    "name": "kami (紙 / 纸)",
+    "category": "Editorial & Print",
+    "description": "Bundled FreeCode package for kami (紙 / 纸), derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "binance",
+    "name": "Binance.US",
+    "category": "Fintech & Crypto",
+    "description": "Bundled FreeCode package for Binance.US, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "coinbase",
+    "name": "Coinbase",
+    "category": "Fintech & Crypto",
+    "description": "Bundled FreeCode package for Coinbase, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "kraken",
+    "name": "Kraken",
+    "category": "Fintech & Crypto",
+    "description": "Bundled FreeCode package for Kraken, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "mastercard",
+    "name": "Mastercard",
+    "category": "Fintech & Crypto",
+    "description": "Bundled FreeCode package for Mastercard, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "revolut",
+    "name": "Revolut",
+    "category": "Fintech & Crypto",
+    "description": "Bundled FreeCode package for Revolut, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "stripe",
+    "name": "Stripe",
+    "category": "Fintech & Crypto",
+    "description": "Bundled FreeCode package for Stripe, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "wise",
+    "name": "Wise",
+    "category": "Fintech & Crypto",
+    "description": "Bundled FreeCode package for Wise, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "bento",
+    "name": "Bento",
+    "category": "Layout & Structure",
+    "description": "Bundled FreeCode package for Bento, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "levels",
+    "name": "Levels",
+    "category": "Layout & Structure",
+    "description": "Bundled FreeCode package for Levels, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "perspective",
+    "name": "Perspective",
+    "category": "Layout & Structure",
+    "description": "Bundled FreeCode package for Perspective, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "spacious",
+    "name": "Spacious",
+    "category": "Layout & Structure",
+    "description": "Bundled FreeCode package for Spacious, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "apple",
+    "name": "Apple",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for Apple, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "ibm",
+    "name": "IBM",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for IBM, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "nvidia",
+    "name": "NVIDIA",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for NVIDIA, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "pinterest",
+    "name": "Pinterest",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for Pinterest, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "playstation",
+    "name": "PlayStation",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for PlayStation, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "spacex",
+    "name": "SpaceX",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for SpaceX, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "spotify",
+    "name": "Spotify",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for Spotify, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "theverge",
+    "name": "The Verge",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for The Verge, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "uber",
+    "name": "Uber",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for Uber, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "vodafone",
+    "name": "Vodafone",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for Vodafone, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "wired",
+    "name": "WIRED",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for WIRED, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "xiaohongshu",
+    "name": "Xiaohongshu",
+    "category": "Media & Consumer",
+    "description": "Bundled FreeCode package for Xiaohongshu, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "clean",
+    "name": "Clean",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Clean, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "contemporary",
+    "name": "Contemporary",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Contemporary, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "flat",
+    "name": "Flat",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Flat, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "minimal",
+    "name": "Minimal",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Minimal, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "modern",
+    "name": "Modern",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Modern, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "mono",
+    "name": "Mono",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Mono, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "refined",
+    "name": "Refined",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Refined, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "shadcn",
+    "name": "Shadcn",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Shadcn, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "simple",
+    "name": "Simple",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Simple, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "sleek",
+    "name": "Sleek",
+    "category": "Modern & Minimal",
+    "description": "Bundled FreeCode package for Sleek, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "claymorphism",
+    "name": "Claymorphism",
+    "category": "Morphism & Effects",
+    "description": "Bundled FreeCode package for Claymorphism, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "glassmorphism",
+    "name": "Glassmorphism",
+    "category": "Morphism & Effects",
+    "description": "Bundled FreeCode package for Glassmorphism, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "gradient",
+    "name": "Gradient",
+    "category": "Morphism & Effects",
+    "description": "Bundled FreeCode package for Gradient, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "neon",
+    "name": "Neon",
+    "category": "Morphism & Effects",
+    "description": "Bundled FreeCode package for Neon, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "neumorphism",
+    "name": "Neumorphism",
+    "category": "Morphism & Effects",
+    "description": "Bundled FreeCode package for Neumorphism, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "skeumorphism",
+    "name": "Skeumorphism",
+    "category": "Morphism & Effects",
+    "description": "Bundled FreeCode package for Skeumorphism, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "arc",
+    "name": "Arc Browser",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Arc Browser, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "cal",
+    "name": "Cal.com",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Cal.com, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "discord",
+    "name": "Discord",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Discord, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "duolingo",
+    "name": "Duolingo",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Duolingo, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "intercom",
+    "name": "Intercom",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Intercom, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "linear-app",
+    "name": "Linear",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Linear, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "mintlify",
+    "name": "Mintlify",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Mintlify, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "notion",
+    "name": "Notion",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Notion, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "resend",
+    "name": "Resend",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Resend, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "slack",
+    "name": "Slack",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Slack, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "webex",
+    "name": "Webex",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Webex, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "zapier",
+    "name": "Zapier",
+    "category": "Productivity & SaaS",
+    "description": "Bundled FreeCode package for Zapier, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "ant",
+    "name": "Ant",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Ant, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "application",
+    "name": "Application",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Application, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "corporate",
+    "name": "Corporate",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Corporate, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "dashboard",
+    "name": "Dashboard",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Dashboard, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "elegant",
+    "name": "Elegant",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Elegant, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "enterprise",
+    "name": "Enterprise",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Enterprise, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "luxury",
+    "name": "Luxury",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Luxury, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "material",
+    "name": "Material",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Material, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "premium",
+    "name": "Premium",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Premium, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "professional",
+    "name": "Professional",
+    "category": "Professional & Corporate",
+    "description": "Bundled FreeCode package for Professional, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "dithered",
+    "name": "Dithered",
+    "category": "Retro & Nostalgic",
+    "description": "Bundled FreeCode package for Dithered, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "paper",
+    "name": "Paper",
+    "category": "Retro & Nostalgic",
+    "description": "Bundled FreeCode package for Paper, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "retro",
+    "name": "Retro",
+    "category": "Retro & Nostalgic",
+    "description": "Bundled FreeCode package for Retro, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "vintage",
+    "name": "Vintage",
+    "category": "Retro & Nostalgic",
+    "description": "Bundled FreeCode package for Vintage, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "wechat",
+    "name": "WeChat Design System",
+    "category": "Social & Messaging",
+    "description": "Bundled FreeCode package for WeChat Design System, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "default",
+    "name": "Neutral Modern",
+    "category": "Starter",
+    "description": "Bundled FreeCode package for Neutral Modern, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "tom-modern",
+    "name": "Tom Modern Design",
+    "category": "Starter",
+    "description": "Editorial-technical design system. Neutral canvas, single vermillion accent, sharp corners, Geist typography, hard shadows, structured composition."
+  },
+  {
+    "id": "warm-editorial",
+    "name": "Warm Editorial",
+    "category": "Starter",
+    "description": "Bundled FreeCode package for Warm Editorial, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "agentic",
+    "name": "Agentic",
+    "category": "Themed & Unique",
+    "description": "Bundled FreeCode package for Agentic, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "futuristic",
+    "name": "Futuristic",
+    "category": "Themed & Unique",
+    "description": "Bundled FreeCode package for Futuristic, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "hud",
+    "name": "HUD Design System",
+    "category": "Themed & Unique",
+    "description": "Bundled FreeCode package for HUD Design System, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "loom",
+    "name": "Loom Design System",
+    "category": "Themed & Unique",
+    "description": "Bundled FreeCode package for Loom Design System, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "pacman",
+    "name": "Pacman",
+    "category": "Themed & Unique",
+    "description": "Bundled FreeCode package for Pacman, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "tetris",
+    "name": "Tetris",
+    "category": "Themed & Unique",
+    "description": "Bundled FreeCode package for Tetris, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "totality-festival",
+    "name": "Totality Festival",
+    "category": "Themed & Unique",
+    "description": "Bundled FreeCode package for Totality Festival, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  },
+  {
+    "id": "trading-terminal",
+    "name": "Trading Terminal Design System",
+    "category": "Themed & Unique",
+    "description": "Bundled FreeCode package for Trading Terminal Design System, derived from curated DESIGN.md, tokens.css, and components.html fixtures."
+  }
+]

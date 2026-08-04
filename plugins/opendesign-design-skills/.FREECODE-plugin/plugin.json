@@ -1,0 +1,8 @@
+{
+  "name": "opendesign-design-skills",
+  "description": "292 agent-agnostic design skills — design systems, aesthetics, taste calibration, decks, editorial, brand, motion, and production patterns. Adapted from the Apache-2.0 Open Design corpus into FreeCode's SKILL.md format. Feeds the FreeCode design canvas and any SKILL.md-capable agent.",
+  "author": {
+    "name": "FreeCode",
+    "email": "support@freecode.ai"
+  }
+}

@@ -9,6 +9,56 @@
   },
   "plugins": [
     {
+      "name": "opendesign-design-systems",
+      "source": "./plugins/opendesign-design-systems",
+      "description": "151 portable design-system packages (manifest.json + DESIGN.md + tokens.css) spanning SaaS, editorial, brutalist, fintech, themed and more. Adapted from the Apache-2.0 Open Design catalog. Selecting one composes its design context + tokens into FreeCode generation for on-brand, high-craft output.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "Apache-2.0",
+      "keywords": [
+        "design",
+        "design-system",
+        "tokens",
+        "ui",
+        "aesthetics"
+      ],
+      "category": "design",
+      "tags": [
+        "design",
+        "design-system",
+        "tokens"
+      ]
+    },
+    {
+      "name": "opendesign-design-skills",
+      "source": "./plugins/opendesign-design-skills",
+      "description": "292 agent-agnostic design skills — design systems, aesthetics, taste calibration, decks, editorial, brand, motion, and production patterns. Adapted from the Apache-2.0 Open Design corpus into FreeCode's SKILL.md format. Feeds the FreeCode design canvas and any SKILL.md-capable agent.",
+      "version": "1.0.0",
+      "author": {
+        "name": "FreeCode",
+        "email": "support@freecode.ai"
+      },
+      "homepage": "https://freecode.ai",
+      "license": "Apache-2.0",
+      "keywords": [
+        "design",
+        "design-system",
+        "ui",
+        "aesthetics",
+        "skills"
+      ],
+      "category": "design",
+      "tags": [
+        "design",
+        "design-system",
+        "frontend"
+      ]
+    },
+    {
       "name": "freecode-core",
       "source": "./plugins/core",
       "description": "Core agents and skills for everyday development: architect, code review, refactoring, deep research, and git workflow. Enabled by default after marketplace install.",

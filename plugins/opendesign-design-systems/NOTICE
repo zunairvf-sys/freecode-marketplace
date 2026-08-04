@@ -1,0 +1,22 @@
+opendesign-design-systems
+=========================
+
+This plugin contains design-system packages adapted from the Open Design
+project (nexu-io/open-design), licensed under the Apache License, Version 2.0.
+
+  Copyright (c) Open Design contributors.
+  https://github.com/nexu-io/open-design
+  Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Each package keeps its original machine-readable shape:
+  design-systems/<slug>/
+    ├── manifest.json   (discovery metadata)
+    ├── DESIGN.md       (canonical design prose for agents)
+    └── tokens.css      (compiled semantic tokens)
+  (plus optional design-tokens.json, USAGE.md, components.html, tailwind-v4.css)
+
+Changes made in this distribution:
+  - Rewrote host-specific product references to FreeCode in prose/metadata.
+  - Retained token values, categories, and design guidance unchanged.
+
+See LICENSE for the full Apache-2.0 text and attribution terms.

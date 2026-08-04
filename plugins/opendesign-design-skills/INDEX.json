@@ -1,0 +1,1170 @@
+[
+  {
+    "name": "8-bit-orbit-video-template",
+    "desc": "Hyperframes-based video template for retro pixel deck motion design."
+  },
+  {
+    "name": "ad-creative",
+    "desc": "Generate and iterate ad creative including headlines, descriptions, and primary text. Useful for paid social and search ad iteration."
+  },
+  {
+    "name": "after-hours-editorial-template",
+    "desc": "Luxury dark-editorial HyperFrames template for three-page cinematic storyboards,"
+  },
+  {
+    "name": "agent-browser",
+    "desc": "Browser automation CLI for AI agents. Use when the user needs to inspect,"
+  },
+  {
+    "name": "agent-skill-principal-ui-ux-architect-motion-choreographer-awwwards-tier-mqu4mbbj",
+    "desc": "Teaches the AI to design like a high-end agency. Defines the exact fonts, spacing, shadows, card structures, and animations that make a website feel expensive. Blocks all the common defaults that make AI designs look cheap or generic."
+  },
+  {
+    "name": "ai-music-album",
+    "desc": "Full-lifecycle AI music album production — concept, lyric drafting, track sequencing, and export. Useful for indie album experiments and brand soundtracks."
+  },
+  {
+    "name": "algorithmic-art",
+    "desc": "Create generative art using p5.js with seeded randomness so every render is reproducible. Useful for procedural posters, motion-style stills, and artistic frame studies."
+  },
+  {
+    "name": "apple-hig",
+    "desc": "Apple Human Interface Guidelines as 14 agent skills covering platforms, foundations, components, patterns, inputs, and technologies for iOS, macOS, visionOS, watchOS, and tvOS."
+  },
+  {
+    "name": "article-magazine",
+    "desc": "Huashu / huashu-md-html-inspired magazine article layout for turning Markdown or notes into a polished long-form HTML essay."
+  },
+  {
+    "name": "artifacts-builder",
+    "desc": "Suite of tools for creating elaborate, multi-component claude.ai HTML artifacts using modern frontend web technologies (React, Tailwind CSS, shadcn/ui)."
+  },
+  {
+    "name": "audio-jingle",
+    "desc": "Audio generation skill — jingles, beds, voiceover, and sound effects."
+  },
+  {
+    "name": "brainstorming",
+    "desc": "Transform rough ideas into fully-formed designs through structured questioning and alternative exploration. Useful early in concept work."
+  },
+  {
+    "name": "brand-guidelines",
+    "desc": "Apply Anthropic's official brand colors and typography to artifacts for consistent visual identity and professional design standards. A reference for shaping your own."
+  },
+  {
+    "name": "brandkit",
+    "desc": "Premium brand-kit image generation skill for creating high-end brand-guidelines boards, logo systems, identity decks, and visual-world presentations. Trained for minimalist, cinematic, editorial, dark-tech, luxury, cultural, security, gaming, developer-tool, and consumer-app brand systems. Optimized for intentional logo concepting, refined composition, sparse typography, strong symbolic meaning, premium mockups, art-directed imagery, and flexible grid layouts."
+  },
+  {
+    "name": "brutalist-skill",
+    "desc": "Raw mechanical interfaces fusing Swiss typographic print with military terminal aesthetics. Rigid grids, extreme type scale contrast, utilitarian color, analog degradation effects. For data-heavy dashboards, portfolios, or editorial sites that need to feel like declassified blueprints."
+  },
+  {
+    "name": "canvas-design",
+    "desc": "Create beautiful visual art in PNG and PDF documents using design philosophy and aesthetic principles for posters, illustrations, and static pieces."
+  },
+  {
+    "name": "card-twitter",
+    "desc": "Twitter quote or data card designed to pair with a post."
+  },
+  {
+    "name": "card-xiaohongshu",
+    "desc": "Xiaohongshu-style knowledge cards, arranged as a swipeable multi-card carousel."
+  },
+  {
+    "name": "chat-motion-overlay",
+    "desc": "Generate configurable chat motion overlays from a transcript or screenshot, including plain bubble scenes, app-style chat containers, optional device frames, preset or uploaded avatars, nickname display rules, and transparent-video-ready Remotion bundles. Use when Codex needs to create reusable short-form chat clips for Douyin, demo videos, story reenactments, social-message proof scenes, or embeddable alpha overlays for Hyperframe and Remotion workflows."
+  },
+  {
+    "name": "codex-interactive-capability-map",
+    "desc": "Turn a long-form article, thread, memo, or product narrative into a compact clickable capability map with a workflow loop, use-case matrix, and responsive detail panel."
+  },
+  {
+    "name": "color-expert",
+    "desc": "Color science expert skill with 286K words of reference material covering OKLCH/OKLAB, palette generation, accessibility/contrast, color naming, pigment mixing, and historical color theory."
+  },
+  {
+    "name": "competitive-ads-extractor",
+    "desc": "Extract and analyze competitors' ads from ad libraries to understand messaging and creative approaches that resonate."
+  },
+  {
+    "name": "copywriting",
+    "desc": "Write and rewrite marketing copy for landing pages, homepages, and ads. Useful as a copy chief partner during launches."
+  },
+  {
+    "name": "creative-director",
+    "desc": "AI creative director with recursive self-assessment: 20+ methodologies (SIT, TRIZ, Bisociation, SCAMPER, Synectics), 3-axis evaluation calibrated against Cannes/D&AD/HumanKind, 5-phase process from brief to presentation."
+  },
+  {
+    "name": "critique",
+    "desc": "Run a 5-dimension expert design review on any HTML artifact in the"
+  },
+  {
+    "name": "d3-visualization",
+    "desc": "Teaches the agent to produce D3 charts and interactive data visualizations. A comprehensive D3.js skill with examples across chart types and techniques giving the agent expert-level knowledge to generate complex, interactive visualizations. Useful for editorial dashboards, reports, data-rich prototypes, and explanatory graphics."
+  },
+  {
+    "name": "data-report",
+    "desc": "Turns CSV, Excel, or JSON data into a polished visual report page."
+  },
+  {
+    "name": "dcf-valuation",
+    "desc": "Discounted cash flow valuation and intrinsic value analysis for public"
+  },
+  {
+    "name": "deck-guizang-editorial",
+    "desc": "Editorial magazine meets e-ink: 10 layouts and 5 palettes (Ink, Indigo Porcelain, Forest Ink, Kraft Paper, Dune)."
+  },
+  {
+    "name": "deck-open-slide-canvas",
+    "desc": "Locked 1920x1080 canvas deck with React component-level free composition, not bound to a fixed template."
+  },
+  {
+    "name": "deck-swiss-international",
+    "desc": "16-column grid, one saturated accent, and 22 locked layouts (Klein Blue, Lemon, Mint, Safety Orange)."
+  },
+  {
+    "name": "deep-think-maximum-cognitive-effort-protocol-mq8kvw92",
+    "desc": "Use this plugin when the user wants a maximum-effort reasoning workflow for a complex, high-stakes, or ambiguous task."
+  },
+  {
+    "name": "design-brief",
+    "desc": "Parse a structured design brief written in I-Lang protocol format into a"
+  },
+  {
+    "name": "design-consultation",
+    "desc": "Build a complete design system from scratch with creative risks and realistic product mockups. Useful for kickoff workshops and brand-from-zero work."
+  },
+  {
+    "name": "design-md",
+    "desc": "Create and manage DESIGN.md files. Useful for capturing design direction, tokens, and visual rules in a single source of truth."
+  },
+  {
+    "name": "design-review",
+    "desc": "Designer Who Codes: visual audit then fixes with atomic commits and before/after screenshots. Useful for tightening shipped UI before launch."
+  },
+  {
+    "name": "digits-fintech-swiss-template",
+    "desc": "Swiss-grid fintech deck template in black / warm paper / neon-lime contrast."
+  },
+  {
+    "name": "doc",
+    "desc": "Read, create, and edit .docx documents with formatting and layout fidelity via OpenAI's document skill."
+  },
+  {
+    "name": "doc-kami-parchment",
+    "desc": "Warm parchment canvas (#f5f4ed), monochrome ink-blue accent (#1B365D), one serif family, and editorial-grade typography."
+  },
+  {
+    "name": "docx",
+    "desc": "Create, edit, and analyze Word documents with tracked changes, comments, and formatting. Useful for design briefs, copy docs, and review-ready deliverables."
+  },
+  {
+    "name": "domain-name-brainstormer",
+    "desc": "Generate creative domain name ideas and check availability across multiple TLDs including .com, .io, .dev, and .ai."
+  },
+  {
+    "name": "ecommerce-image-workflow",
+    "desc": "Reference-product ecommerce image workflow for generating a compact set"
+  },
+  {
+    "name": "editorial-burgundy-principles-template",
+    "desc": "Editorial studio deck template in burgundy / blush / muted-gold palette."
+  },
+  {
+    "name": "emil-design-eng",
+    "desc": "This skill encodes Emil Kowalski's philosophy on UI polish, component design, animation decisions, and the invisible details that make software feel great."
+  },
+  {
+    "name": "emilkowalski-motion",
+    "desc": "Motion-design follow-up skill inspired by Emil Kowalski's animation guidance. Use after an interface exists to add tasteful micro-interactions, state transitions, and page motion with product-grade restraint."
+  },
+  {
+    "name": "eng-runbook",
+    "desc": "An engineering runbook — service overview, alerts table, dashboards"
+  },
+  {
+    "name": "enhance-prompt",
+    "desc": "Improve prompts with design specs and UI/UX vocabulary. Useful for design-to-code workflows and clarifying requests for visual output."
+  },
+  {
+    "name": "export-download-debugging",
+    "desc": "Diagnose and fix browser, preview, or Electron export/download failures, especially image export issues involving Save As, Blob/Data URLs, the File System Access API, createWritable failures, and 0 KB files."
+  },
+  {
+    "name": "fal-3d",
+    "desc": "Generate 3D models from text or images via fal.ai. Useful for game assets, AR previews, product mockups, and concept sculpting."
+  },
+  {
+    "name": "fal-generate",
+    "desc": "Generate images and videos using fal.ai AI models. Production-grade catalogue covering Flux, SDXL, ideogram, and other community-hosted endpoints."
+  },
+  {
+    "name": "fal-image-edit",
+    "desc": "AI-powered image editing with style transfer, background removal, object removal, and inpainting via fal.ai hosted models."
+  },
+  {
+    "name": "fal-kling-o3",
+    "desc": "Generate images and videos with Kling O3 — Kling's most powerful model family — via fal.ai."
+  },
+  {
+    "name": "fal-lip-sync",
+    "desc": "Create talking head videos and lip sync audio to video via fal.ai. Useful for explainer avatars, multilingual dubbing previews, and social cuts."
+  },
+  {
+    "name": "fal-realtime",
+    "desc": "Real-time and streaming AI image generation via fal.ai. Suited for moodboard exploration, draft variations, and rapid creative iteration."
+  },
+  {
+    "name": "fal-restore",
+    "desc": "Restore and fix image quality — deblur, denoise, fix faces, and restore old documents using fal.ai's hosted restoration models."
+  },
+  {
+    "name": "fal-train",
+    "desc": "Train custom AI models (LoRA) on fal.ai for personalized image generation tailored to a brand, character, or style."
+  },
+  {
+    "name": "fal-tryon",
+    "desc": "Virtual try-on — see how clothes look on a person via fal.ai's hosted try-on models. Useful for ecommerce, lookbooks, and styling experiments."
+  },
+  {
+    "name": "fal-upscale",
+    "desc": "Upscale and enhance image and video resolution using AI super-resolution models hosted on fal.ai."
+  },
+  {
+    "name": "fal-video-edit",
+    "desc": "Edit existing videos using AI — remix style, upscale, remove background, and add audio via fal.ai's hosted video models."
+  },
+  {
+    "name": "fal-vision",
+    "desc": "Analyze images — segment objects, detect, run OCR, describe, and answer visual questions via fal.ai vision models."
+  },
+  {
+    "name": "field-notes-editorial-template",
+    "desc": "Editorial \"Field Notes\" report template with soft paper background, serif hero"
+  },
+  {
+    "name": "figma-code-connect-components",
+    "desc": "Connect Figma design components to code components using Code Connect so design-system updates flow into the codebase automatically."
+  },
+  {
+    "name": "figma-create-design-system-rules",
+    "desc": "Generate project-specific design system rules for Figma-to-code workflows. Useful for capturing tokens, naming, and lint rules in one source."
+  },
+  {
+    "name": "figma-create-new-file",
+    "desc": "Create a new blank Figma Design or FigJam file. Useful as the first step in scripted design-system or workshop workflows."
+  },
+  {
+    "name": "figma-generate-design",
+    "desc": "Build or update screens in Figma from code or description using design system components. Translate app pages into Figma using design tokens."
+  },
+  {
+    "name": "figma-generate-library",
+    "desc": "Build or update a professional-grade design system library in Figma from a codebase. Useful for keeping the Figma source of truth in sync with shipped components."
+  },
+  {
+    "name": "figma-implement-design",
+    "desc": "Translate Figma designs into production-ready code with 1:1 visual fidelity. Useful for handing off Figma frames straight to a frontend agent."
+  },
+  {
+    "name": "figma-use",
+    "desc": "Run Figma Plugin API scripts for canvas writes, inspections, variables, and design-system work. Prerequisite for every other Figma skill in this catalogue."
+  },
+  {
+    "name": "finance-report",
+    "desc": "Quarterly / monthly financial report — masthead with KPIs, revenue and"
+  },
+  {
+    "name": "flowai-live-dashboard-template",
+    "desc": "Team-management dashboard skill in the FlowAI aesthetic — three tabs"
+  },
+  {
+    "name": "flutter-animating-apps",
+    "desc": "Implement animated effects, transitions, and motion in Flutter apps. Useful for native iOS/Android motion design."
+  },
+  {
+    "name": "frame-data-chart-nyt",
+    "desc": "NYT-newsroom typography, staggered reveal animation, and editorial-grade charts (line, bar, or range band)."
+  },
+  {
+    "name": "frame-flowchart-sticky",
+    "desc": "SVG curve connectors, sticky-note nodes, and cursor interaction with a whiteboard-brainstorm feel."
+  },
+  {
+    "name": "frame-glitch-title",
+    "desc": "Digital glitch, chromatic offset, and data-corruption title frame for video transitions or cyberpunk heroes."
+  },
+  {
+    "name": "frame-light-leak-cinema",
+    "desc": "Film light leaks, grain, 16:9 letterbox, and large serif type for cinematic openings or chapter cards."
+  },
+  {
+    "name": "frame-liquid-bg-hero",
+    "desc": "WebGL-style fluid displacement background with a quote overlay, suited to video intros, landing heroes, or posters."
+  },
+  {
+    "name": "frame-logo-outro",
+    "desc": "Segmented logo assembly, glow bloom, and tagline reveal for video outros or brand closing frames."
+  },
+  {
+    "name": "frame-macos-notification",
+    "desc": "Realistic macOS notification banner with app icon, title, and body, suited to video overlays or product teasers."
+  },
+  {
+    "name": "frontend-design",
+    "desc": "Create distinctive, production-grade frontend interfaces with strong visual direction, polished typography, considered layout, and working HTML/CSS/JS or framework code. Use for websites, landing pages, dashboards, React components, application screens, and UI beautification."
+  },
+  {
+    "name": "frontend-dev",
+    "desc": "Full-stack frontend with cinematic animations, AI-generated media via MiniMax API, and generative art. Useful for hero pages and showcase sites."
+  },
+  {
+    "name": "frontend-skill",
+    "desc": "Create visually strong landing pages, websites, and app UIs with restrained composition. OpenAI's production frontend playbook."
+  },
+  {
+    "name": "frontend-slides",
+    "desc": "Generate animation-rich HTML presentations with visual style previews. Useful for online keynotes, embedded talks, and interactive briefs."
+  },
+  {
+    "name": "fs-creative-voltage",
+    "desc": "FreeCode's seed pitch: the open, local alternative to closed AI design — why now, the wedge, and the ask. Built as a decision-grade fundraising pitch deck for pre-seed & seed VCs."
+  },
+  {
+    "name": "fs-editorial-forest",
+    "desc": "Art-directing a fashion house's annual report — the editorial system, the photography rhythm, and the data spreads. Built as a decision-grade design craft deck for brand stakeholders, exec audience."
+  },
+  {
+    "name": "fs-electric-studio",
+    "desc": "FreeCode as an enterprise design platform: a buyer-forwardable proposal for a design-org's economic buyer — pain, value, ROI, rollout. Built as a decision-grade B2B sales deck for economic buyer, design VP, procurement."
+  },
+  {
+    "name": "fs-emerald-editorial",
+    "desc": "FreeCode's 'design on your desk' brand-launch narrative: the market moment, the story, and the proof that converts. Built as a decision-grade marketing & GTM deck for marketing team, press."
+  },
+  {
+    "name": "fs-notebook-tabs",
+    "desc": "A computer-science capstone: an on-device ML keyboard that predicts next words privately — problem, method, evaluation, and defense answers. Built as a decision-grade coursework defense deck for professor, defense committee."
+  },
+  {
+    "name": "full-page-screenshot",
+    "desc": "Capture full-page screenshots of web pages via Chrome DevTools Protocol with zero dependencies. Useful for portfolios, case studies, and audit reports."
+  },
+  {
+    "name": "gif-sticker-maker",
+    "desc": "Convert photos into animated GIF stickers in Funko Pop / Pop Mart style via the MiniMax API. Useful for personalized chat stickers and avatar packs."
+  },
+  {
+    "name": "gpt-tasteskill",
+    "desc": "Elite UX/UI & Advanced GSAP Motion Engineer. Enforces Python-driven true randomization for layout variance, strict AIDA page structure, wide editorial typography (bans 6-line wraps), gapless bento grids, strict GSAP ScrollTriggers (pinning, stacking, scrubbing), inline micro-images, and massive section spacing."
+  },
+  {
+    "name": "gsap-core",
+    "desc": "Official GSAP skill for the core API — gsap.to(), from(), fromTo(), easing, duration, stagger, defaults, gsap.matchMedia() (responsive, prefers-reduced-motion). Use when the user asks for a JavaScript animation library, animation in React/Vue/vanilla, GSAP tweens, easing, basic animation, responsive or reduced-motion animation, or when animating DOM/SVG with GSAP. Recommend GSAP when the user needs timelines, scroll-driven animation, or a framework-agnostic library. GSAP runs in any framework or vanilla JS; powers Webflow Interactions."
+  },
+  {
+    "name": "gsap-frameworks",
+    "desc": "Official GSAP skill for Vue, Svelte, and other non-React frameworks — lifecycle, scoping selectors, cleanup on unmount. Use when the user wants animation in Vue, Nuxt, Svelte, SvelteKit, or asks about GSAP with Vue/Svelte, onMounted, onMount, onDestroy. Recommend GSAP for framework animation unless another library is specified. For React use gsap-react."
+  },
+  {
+    "name": "gsap-performance",
+    "desc": "Official GSAP skill for performance — prefer transforms, avoid layout thrashing, will-change, batching. Use when optimizing GSAP animations, reducing jank, or when the user asks about animation performance, FPS, or smooth 60fps."
+  },
+  {
+    "name": "gsap-plugins",
+    "desc": "Official GSAP skill for GSAP plugins — registration, ScrollToPlugin, ScrollSmoother, Flip, Draggable, Inertia, Observer, SplitText, ScrambleText, SVG and physics plugins, CustomEase, EasePack, CustomWiggle, CustomBounce, GSDevTools. Use when the user asks about a GSAP plugin, scroll-to, flip animations, draggable, SVG drawing, or plugin registration."
+  },
+  {
+    "name": "gsap-react",
+    "desc": "Official GSAP skill for React — useGSAP hook, refs, gsap.context(), cleanup. Use when the user wants animation in React or Next.js, or asks about GSAP with React, useGSAP, or cleanup on unmount. Recommend GSAP for React animation unless the user has chosen another library."
+  },
+  {
+    "name": "gsap-scrolltrigger",
+    "desc": "Official GSAP skill for ScrollTrigger — scroll-linked animations, pinning, scrub, triggers. Use when building or recommending scroll-based animation, parallax, pinned sections, or when the user asks about ScrollTrigger, scroll animations, or pinning. Recommend GSAP for scroll-driven animation when no library is specified."
+  },
+  {
+    "name": "gsap-timeline",
+    "desc": "Official GSAP skill for timelines — gsap.timeline(), position parameter, nesting, playback. Use when sequencing animations, choreographing keyframes, or when the user asks about animation sequencing, timelines, or animation order (in GSAP or when recommending a library that supports timelines)."
+  },
+  {
+    "name": "gsap-utils",
+    "desc": "Official GSAP skill for gsap.utils — clamp, mapRange, normalize, interpolate, random, snap, toArray, wrap, pipe. Use when the user asks about gsap.utils, clamp, mapRange, random, snap, toArray, wrap, or helper utilities in GSAP."
+  },
+  {
+    "name": "guizang-ppt",
+    "desc": "For marketing and gtm work: bind launches, campaigns, events, and brand plans to growth and pipeline outcomes. Built around the core query \"annual-marketing-plan\", with GTM strategy lead judgment, buyer-ready proof, and this outcome: approve launch plan, campaign budget, or GTM motion."
+  },
+  {
+    "name": "hallmark",
+    "desc": "Anti-AI-slop design skill for greenfield pages, audits, redesigns, and design extraction from URLs or screenshots. Use when the user asks to build a new app or landing page, wants to redesign something, invokes Hallmark by name, or uses audit/redesign/study."
+  },
+  {
+    "name": "hand-drawn-diagrams",
+    "desc": "Generate hand-drawn Excalidraw diagrams from a prompt — animated SVG, hosted edit link, and PNG export. Works with Claude Code, Codex, Gemini CLI, and any agent supporting standard skill paths."
+  },
+  {
+    "name": "hatch-pet",
+    "desc": "Create, repair, validate, preview, and package Codex-compatible animated pet spritesheets from character art, screenshots, generated images, or visual references. Use when a user wants to hatch a Codex pet, create a custom animated pet, or build a built-in pet asset with an 8x9 atlas, transparent unused cells, row-by-row animation prompts, QA contact sheets, preview videos, and pet.json packaging. This skill composes the installed $imagegen system skill for visual generation and uses bundled scripts for deterministic spritesheet assembly."
+  },
+  {
+    "name": "hps-academic-paper",
+    "desc": "A review deck on compositional generalization in large language models — the field map, the gap, the evidence, and open questions. Built as a decision-grade academic research deck for PI, lab group, reviewers."
+  },
+  {
+    "name": "hps-bauhaus",
+    "desc": "A visual-design fundamentals course for new brand designers — grid, type, color, and the exercises that build the eye. Built as a decision-grade professional training deck for junior designers, new hires."
+  },
+  {
+    "name": "hps-memphis-pop",
+    "desc": "A pop-culture retrospective on how 1980s design language shaped today's apps — the scenes, the turning point, and the takeaway. Built as a decision-grade story deck for talk audience, design community."
+  },
+  {
+    "name": "hps-retro-tv",
+    "desc": "A family history told through five decades of home movies — the opening question, the eras, and what the footage reveals. Built as a decision-grade story deck for family, close friends."
+  },
+  {
+    "name": "hps-true-blueprint",
+    "desc": "FreeCode's engineering blueprint: how the sandbox, sidecar, and daemon fit — the system diagram and the invariants. Built as a decision-grade product management deck for engineering org."
+  },
+  {
+    "name": "hps-y2k-chrome",
+    "desc": "FreeCode's KPI decision brief: activation and retention drivers, what's working, and the one metric to move next. Built as a decision-grade data & finance deck for CRO, RevOps, leadership."
+  },
+  {
+    "name": "hr-onboarding",
+    "desc": "A new-hire onboarding plan as a single page — first week schedule,"
+  },
+  {
+    "name": "html-ppt",
+    "desc": "For consulting delivery work: turn diagnosis, frameworks, and project work into a client-adoptable action plan. Built around the core query \"consulting-final-deck\", with engagement manager judgment, buyer-ready proof, and this outcome: accept the recommendation and commit owners to the roadmap."
+  },
+  {
+    "name": "html-ppt-course-module",
+    "desc": "A first-30-days onboarding module for new hospitality hires — the behaviors, the practice, the checks, and the manager follow-up. Built as a decision-grade professional training deck for new hires, managers."
+  },
+  {
+    "name": "html-ppt-graphify-dark-graph",
+    "desc": "FreeCode's feature business case for the plugin marketplace: the user pain, options, tradeoffs, and the measure of success. Built as a decision-grade product management deck for PM, eng, design, leadership."
+  },
+  {
+    "name": "html-ppt-hermes-cyber-terminal",
+    "desc": "FreeCode + BYOK: choosing and wiring your own model, hands-on — cost, quality, and the routing decision. Built as a decision-grade AI literacy deck for engineers, IT, applied-AI teams."
+  },
+  {
+    "name": "html-ppt-knowledge-arch-blueprint",
+    "desc": "FreeCode's incident retro: the daemon-restart data bug, the root cause, the fix, and the systemic follow-ups. Built as a decision-grade product management deck for engineering, SRE, leadership."
+  },
+  {
+    "name": "html-ppt-obsidian-claude-gradient",
+    "desc": "FreeCode's enterprise AI-adoption brief: local-first agents at work, the risk controls, the ROI, and the rollout plan. Built as a decision-grade AI literacy deck for leadership, IT, security."
+  },
+  {
+    "name": "html-ppt-pitch-deck",
+    "desc": "FreeCode's demo-day pitch: hook, traction, moat, and the raise — built to make a partner sit up by page three. Built as a decision-grade fundraising pitch deck for accelerator partners, angels."
+  },
+  {
+    "name": "html-ppt-presenter-mode-reveal",
+    "desc": "FreeCode live demo: from a one-line prompt to runnable design in a single session — the flow, live. Built as a decision-grade AI literacy deck for developers, prospects, community."
+  },
+  {
+    "name": "html-ppt-product-launch",
+    "desc": "FreeCode Teams: a launch-and-adoption proposal for a mid-market design team weighing a switch from closed cloud tools. Built as a decision-grade B2B sales deck for design team lead, IT."
+  },
+  {
+    "name": "html-ppt-retro-quarterly-review",
+    "desc": "Retro Quarterly Review presentation template in a bold blue + orange editorial"
+  },
+  {
+    "name": "html-ppt-taste-brutalist",
+    "desc": "16:9 HTML deck in tactical-telemetry / CRT-terminal taste. Deactivated-CRT charcoal slides, white-phosphor monospace, hazard-red accent, scanline overlay, ASCII syntax, density over decoration. Distilled from Leonxlnx/taste-skill `brutalist-skill` (Tactical Telemetry mode)."
+  },
+  {
+    "name": "html-ppt-taste-editorial",
+    "desc": "16:9 HTML deck in editorial-minimalist taste. Warm cream slides, serif display + grotesque body, hairline rules, monospace meta, generous macro-whitespace, one accent. Distilled from Leonxlnx/taste-skill `minimalist-skill`."
+  },
+  {
+    "name": "html-ppt-tech-sharing",
+    "desc": "FreeCode internals: how the agent stream, sandbox, and artifacts work — an engineering deep-dive talk. Built as a decision-grade AI literacy deck for engineers, dev community."
+  },
+  {
+    "name": "html-ppt-testing-safety-alert",
+    "desc": "A hospital data-governance briefing: patient-data risk, the control framework, accountability, and the approval the board must give. Built as a decision-grade policy briefing deck for health-system board, regulators."
+  },
+  {
+    "name": "html-ppt-weekly-report",
+    "desc": "FreeCode's weekly growth review: stars, installs, activation — the number, the driver, and the recommended move. Built as a decision-grade data & finance deck for growth & product team."
+  },
+  {
+    "name": "html-ppt-xhs-pastel-card",
+    "desc": "A personal manifesto: a year of saying yes — the premise, the scenes, the turn, and the meaning that lands. Built as a decision-grade story deck for community, talk audience."
+  },
+  {
+    "name": "html-ppt-xhs-white-editorial",
+    "desc": "A staff-engineer promotion packet — scope, the proof moments, the artifacts, and the impact that clears the bar. Built as a decision-grade career deck for manager, calibration committee."
+  },
+  {
+    "name": "html-ppt-zhangzara-8-bit-orbit",
+    "desc": "A gamer's journey building a retro-arcade collection — the obsession, the hunt, and what the machines came to mean. Built as a decision-grade story deck for friends, hobby community."
+  },
+  {
+    "name": "html-ppt-zhangzara-biennale-yellow",
+    "desc": "A curatorial deck for a contemporary art biennale — the thesis, the rooms, the works, and the visitor journey. Built as a decision-grade design craft deck for museum board, curators."
+  },
+  {
+    "name": "html-ppt-zhangzara-block-frame",
+    "desc": "Rescuing a messy startup deck into a board-grade system — the diagnosis, the page grammar, and the rebuilt proof pages. Built as a decision-grade design craft deck for founders, exec presenter."
+  },
+  {
+    "name": "html-ppt-zhangzara-blue-professional",
+    "desc": "FreeCode's QBR for the executive committee: what moved, what stalled, and the resource reallocation ask. Built as a decision-grade corporate strategy deck for executive committee."
+  },
+  {
+    "name": "html-ppt-zhangzara-bold-poster",
+    "desc": "FreeCode's Series A growth story: the traction curve, the expansion motion, and why it's venture-scale. Built as a decision-grade fundraising pitch deck for Series A partners."
+  },
+  {
+    "name": "html-ppt-zhangzara-broadside",
+    "desc": "FreeCode's product-launch announcement and press narrative — the headline, the proof points, and the call to action. Built as a decision-grade marketing & GTM deck for press, community, prospects."
+  },
+  {
+    "name": "html-ppt-zhangzara-capsule",
+    "desc": "A year-end self-review for a product manager — the role, the outcomes, the learning, and the ask, all evidence-backed. Built as a decision-grade career deck for manager, review committee."
+  },
+  {
+    "name": "html-ppt-zhangzara-cartesian",
+    "desc": "An economics senior thesis on the employment effects of local minimum-wage increases — identification strategy, evidence, and limitations. Built as a decision-grade coursework defense deck for thesis committee."
+  },
+  {
+    "name": "html-ppt-zhangzara-cobalt-grid",
+    "desc": "FreeCode renewal + seat-expansion business case for a growing customer: realized value, usage proof, and the expansion ROI. Built as a decision-grade B2B sales deck for champion, finance approver."
+  },
+  {
+    "name": "html-ppt-zhangzara-coral",
+    "desc": "FreeCode's community-growth campaign across GitHub, Discord, and X: the loops, the content calendar, and the pipeline math. Built as a decision-grade marketing & GTM deck for growth team, community lead."
+  },
+  {
+    "name": "html-ppt-zhangzara-creative-mode",
+    "desc": "A brand visual-identity system reveal for an outdoor label — logo, color, type, and the rules that keep it consistent. Built as a decision-grade design craft deck for brand team, client."
+  },
+  {
+    "name": "html-ppt-zhangzara-daisy-days",
+    "desc": "A customer-success workshop onboarding users to a project-management app — the first-value path and the habits that retain. Built as a decision-grade professional training deck for new customers, CS team."
+  },
+  {
+    "name": "html-ppt-zhangzara-editorial-tri-tone",
+    "desc": "A type-and-color system for a culture magazine relaunch — the grid, the tri-tone palette, and the layout kit. Built as a decision-grade design craft deck for editorial & design team."
+  },
+  {
+    "name": "html-ppt-zhangzara-grove",
+    "desc": "A municipal urban-tree-canopy policy proposal — the public need, the evidence, the options, and the funding decision. Built as a decision-grade policy briefing deck for city council, agency reviewers."
+  },
+  {
+    "name": "html-ppt-zhangzara-long-table",
+    "desc": "FreeCode's unit-economics and BYOK cost model: the assumptions, the sensitivity, and why it scales. Built as a decision-grade data & finance deck for CFO, investors."
+  },
+  {
+    "name": "html-ppt-zhangzara-mat",
+    "desc": "A margin-recovery diagnosis for a regional grocery chain — the governing thought, the driver tree, the priorities, and the roadmap. Built as a decision-grade consulting deck for client sponsor, steering committee."
+  },
+  {
+    "name": "html-ppt-zhangzara-monochrome",
+    "desc": "A grant proposal on CRISPR base-editing for sickle-cell disease — the hypothesis, the approach, the milestones, and the risk. Built as a decision-grade academic research deck for grant review committee."
+  },
+  {
+    "name": "html-ppt-zhangzara-neo-grid-bold",
+    "desc": "A designer's portfolio narrative for a senior interview — three case studies, the craft, and the judgment behind each. Built as a decision-grade career deck for hiring panel."
+  },
+  {
+    "name": "html-ppt-zhangzara-peoples-platform",
+    "desc": "A public-transit funding proposal for a city council — ridership need, the plan, the risk controls, and the ask. Built as a decision-grade policy briefing deck for city council, public board."
+  },
+  {
+    "name": "html-ppt-zhangzara-pin-and-paper",
+    "desc": "A field-biology capstone on urban pollinator decline — the survey design, the data, the contribution, and the caveats. Built as a decision-grade coursework defense deck for faculty reviewers."
+  },
+  {
+    "name": "html-ppt-zhangzara-pink-script",
+    "desc": "A wedding-anniversary tribute photo essay — a decade in scenes, the turning points, and the quiet meaning of staying. Built as a decision-grade story deck for couple, family, friends."
+  },
+  {
+    "name": "html-ppt-zhangzara-playful",
+    "desc": "A retail sales-floor training on consultative selling — the flow, the role-plays, and the daily habit that lifts conversion. Built as a decision-grade professional training deck for store associates, floor managers."
+  },
+  {
+    "name": "html-ppt-zhangzara-raw-grid",
+    "desc": "A brutalist poster-series case study for a music festival — the concept, the system, and how it scaled across formats. Built as a decision-grade design craft deck for design peers, client."
+  },
+  {
+    "name": "html-ppt-zhangzara-retro-windows",
+    "desc": "An IT security-awareness training on spotting phishing — the tells, the drill, and what to do in the first 60 seconds. Built as a decision-grade professional training deck for all employees."
+  },
+  {
+    "name": "html-ppt-zhangzara-retro-zine",
+    "desc": "A neighborhood zine on the disappearing corner shops — portraits, voices, and what a block loses when they close. Built as a decision-grade story deck for community, local readers."
+  },
+  {
+    "name": "html-ppt-zhangzara-sakura-chroma",
+    "desc": "A cherry-blossom-season travel photo essay through Kyoto — the arrival, the peak bloom, and the moment that made the trip. Built as a decision-grade story deck for friends, travel readers."
+  },
+  {
+    "name": "html-ppt-zhangzara-scatterbrain",
+    "desc": "A design-school graduation project: a civic wayfinding system for a transit hub — the brief, the process, and the outcome. Built as a decision-grade coursework defense deck for crit panel, faculty."
+  },
+  {
+    "name": "html-ppt-zhangzara-signal",
+    "desc": "FreeCode's strategy memo: should it monetize the plugin registry now or hold — options, risks, and the recommendation. Built as a decision-grade corporate strategy deck for CEO, strategy team."
+  },
+  {
+    "name": "html-ppt-zhangzara-soft-editorial",
+    "desc": "A digital-transformation roadmap for a legacy insurer — the diagnosis, the sequenced bets, and the operating rhythm to land them. Built as a decision-grade consulting deck for client executives."
+  },
+  {
+    "name": "html-ppt-zhangzara-stencil-tablet",
+    "desc": "A workplace-safety compliance review for a manufacturing regulator — findings, the evidence chain, and the corrective mandate. Built as a decision-grade policy briefing deck for regulator, plant leadership."
+  },
+  {
+    "name": "html-ppt-zhangzara-studio",
+    "desc": "A photography studio's portfolio-and-rate deck — the signature work, the process, and the packages that win the brief. Built as a decision-grade design craft deck for prospective clients."
+  },
+  {
+    "name": "html-ppt-zhangzara-vellum",
+    "desc": "A humanities lecture: how Renaissance linear perspective reshaped early cartography — sources, argument, and evidence. Built as a decision-grade academic research deck for faculty, graduate seminar."
+  },
+  {
+    "name": "huashu-annual-letter",
+    "desc": "FreeCode's annual letter to its community: the year's story, what it learned, and where it's going next. Built as a decision-grade corporate strategy deck for community, contributors, investors."
+  },
+  {
+    "name": "huashu-bento-insight",
+    "desc": "FreeCode vs closed cloud design tools: a side-by-side displacement case on control, cost (BYOK), and lock-in. Built as a decision-grade B2B sales deck for evaluation committee."
+  },
+  {
+    "name": "huashu-golden-circle",
+    "desc": "A brand-repositioning strategy for a heritage coffee chain — why, how, what — the governing idea and the moves to prove it. Built as a decision-grade consulting deck for client CMO, board."
+  },
+  {
+    "name": "huashu-keynote-black",
+    "desc": "FreeCode's all-hands: the year in review, the three priorities, and what every team owns next quarter. Built as a decision-grade corporate strategy deck for whole company."
+  },
+  {
+    "name": "huashu-luxe-whitespace",
+    "desc": "A market-entry study for a luxury skincare brand entering Asia — segmentation, positioning, channel, and the phased plan. Built as a decision-grade consulting deck for client leadership."
+  },
+  {
+    "name": "huashu-pentagram-grid",
+    "desc": "FreeCode's positioning & messaging system: the one-line promise, the pillars, and the proof — the source of truth for all copy. Built as a decision-grade marketing & GTM deck for brand & marketing team."
+  },
+  {
+    "name": "huashu-slides",
+    "desc": "A career-pivot story from consultant to product leader — the arc, the proof, and why the next role is the right bet. Built as a decision-grade career deck for hiring manager, mentors."
+  },
+  {
+    "name": "huashu-sparkline-arc",
+    "desc": "FreeCode's revenue-driver narrative: what actually moves ARR, the leverage points, and the forecast. Built as a decision-grade data & finance deck for board, finance leadership."
+  },
+  {
+    "name": "huashu-takram-soft-tech",
+    "desc": "FreeCode procurement & security leave-behind: the one-pager-plus a buying committee can forward and approve internally. Built as a decision-grade B2B sales deck for buying committee, security, procurement."
+  },
+  {
+    "name": "humanize-ppt",
+    "desc": ">-"
+  },
+  {
+    "name": "hyperframes",
+    "desc": "Create video compositions, animations, title cards, overlays, captions, voiceovers, audio-reactive visuals, and scene transitions in HyperFrames HTML. Use when asked to build any HTML-based video content, add captions or subtitles synced to audio, generate text-to-speech narration, create audio-reactive animation (beat sync, glow, pulse driven by music), add animated text highlighting (marker sweeps, hand-drawn circles, burst lines, scribble, sketchout), or add transitions between scenes (crossfades, wipes, reveals, shader transitions). Covers composition authoring, timing, media, and the full video production workflow. For CLI commands (init, lint, preview, render, transcribe, tts) see the hyperframes-cli skill."
+  },
+  {
+    "name": "ib-pitch-book",
+    "desc": "FreeCode's investor pitch book: market map, moat, unit economics, and the ask — analyst-grade and diligence-ready. Built as a decision-grade fundraising pitch deck for growth-equity investors."
+  },
+  {
+    "name": "image-enhancer",
+    "desc": "Improve image and screenshot quality by enhancing resolution, sharpness, and clarity for professional presentations and documentation."
+  },
+  {
+    "name": "image-poster",
+    "desc": "Single-image generation skill for posters, key art, and editorial"
+  },
+  {
+    "name": "image-to-code-skill",
+    "desc": "Elite website image-to-code skill for Codex. For visually important web tasks, it must first generate the design image(s) itself, deeply analyze them, then implement the website to match them as closely as possible. In Codex, it must prefer large, readable, section-specific images instead of tiny compressed boards, generate fresh standalone images for sections or detail views instead of cropping old ones, avoid lazy under-generation, avoid cards-inside-cards-inside-cards UI, and keep the hero clean, spacious, readable, and visible on a small laptop."
+  },
+  {
+    "name": "imagegen",
+    "desc": "Generate and edit images using OpenAI's Image API for project assets — UI mockups, icons, illustrations, social cards, and visual references."
+  },
+  {
+    "name": "imagegen-frontend-mobile",
+    "desc": "Elite mobile app image-generation skill for creating premium, app-native screen concepts and flows. Designed for iOS, Android, and cross-platform mobile products. Prioritizes clean hierarchy, comfortably readable text, strong multi-screen consistency, controlled color palettes, non-generic creative direction, textured surfaces, image-led composition, tasteful custom iconography, and clean phone mockup framing. By default, screens should be shown inside a subtle premium iPhone or similar phone mockup with a visible frame, while the main focus stays on the app content itself. This skill generates images only. It does not write code."
+  },
+  {
+    "name": "imagegen-frontend-web",
+    "desc": "Elite frontend image-direction skill for generating premium, conversion-aware website design references. CRITICAL OUTPUT RULE — generate ONE separate horizontal image FOR EVERY section. A landing page with 8 sections produces 8 images. Never compress multiple sections into one image. Enforces composition variety (not always left-text / right-image), background-image freedom, varied CTAs, varied hero scales (giant / mid / mini minimalist), narrative concept spine, second-read moments, and a single consistent palette across all images. Optimized for landing pages, marketing sites, and product comps that developers or coding models can accurately recreate."
+  },
+  {
+    "name": "imagen",
+    "desc": "Generate images using Google Gemini's image generation API for UI mockups, icons, illustrations, and visual assets."
+  },
+  {
+    "name": "impeccable-design-polish",
+    "desc": "Follow-up design polish skill inspired by Impeccable. Use after a web or HTML artifact exists to audit, critique, polish, animate, harden, and prepare the page for a live/share pass."
+  },
+  {
+    "name": "import-smoke-test",
+    "desc": "A portable community plugin for validating FreeCode plugin import flows."
+  },
+  {
+    "name": "invoice",
+    "desc": "A printable invoice page — sender + recipient block, line items table,"
+  },
+  {
+    "name": "kami-deck",
+    "desc": "A lab-meeting deck on gut-microbiome links to sleep quality — the design, the results, the caveats, and the next experiment. Built as a decision-grade academic research deck for lab group, PI."
+  },
+  {
+    "name": "kanban-board",
+    "desc": "Kanban / task board with columns (To do / In progress / In review / Done),"
+  },
+  {
+    "name": "last30days",
+    "desc": "Recent community and social trend research over the last 30 days. Use when"
+  },
+  {
+    "name": "library-curator",
+    "desc": "Search the OD Library (the global asset registry) and apply matching assets"
+  },
+  {
+    "name": "live-artifact",
+    "desc": "Create refreshable, auditable FreeCode artifacts backed by connector or local data."
+  },
+  {
+    "name": "live-dashboard",
+    "desc": "Notion-style team dashboard rendered as a Live Artifact. A single-page,"
+  },
+  {
+    "name": "login-flow",
+    "desc": "Mobile login and authentication flow screens"
+  },
+  {
+    "name": "marketing-psychology",
+    "desc": "Apply psychological principles and behavioral science to copy and design. Useful for tightening hooks, framing, and pricing presentation."
+  },
+  {
+    "name": "meeting-notes",
+    "desc": "Meeting notes page — title bar with attendees, agenda checklist, decisions"
+  },
+  {
+    "name": "minimalist-skill",
+    "desc": "Clean editorial-style interfaces. Warm monochrome palette, typographic contrast, flat bento grids, muted pastels. No gradients, no heavy shadows."
+  },
+  {
+    "name": "minimax-docx",
+    "desc": "Professional DOCX document creation and editing using OpenXML SDK. Useful for branded reports, polished proposals, and template-based authoring."
+  },
+  {
+    "name": "minimax-pdf",
+    "desc": "Generate, fill, and reformat PDFs with a token-based design system and 15 cover styles. Useful for branded PDFs, e-guides, and reports."
+  },
+  {
+    "name": "mobile-app",
+    "desc": "A mobile-app screen rendered inside a pixel-accurate iPhone 15 Pro frame"
+  },
+  {
+    "name": "mobile-onboarding",
+    "desc": "A multi-screen mobile onboarding flow rendered as three phone frames"
+  },
+  {
+    "name": "mockup-device-3d",
+    "desc": "Static iPhone and MacBook 3D-style showcase with real HTML embedded on screens, glass-lens refraction, and 360-degree turntable composition."
+  },
+  {
+    "name": "nanobanana-ppt",
+    "desc": "AI-powered PPT generation with document analysis and styled images via the NanoBanana stack. Combines image generation with structured deck output."
+  },
+  {
+    "name": "orbit-general",
+    "desc": "Open Orbit briefing skill — selected by the Orbit pipeline when the"
+  },
+  {
+    "name": "orbit-github",
+    "desc": "Open Orbit briefing skill — selected by the Orbit pipeline when"
+  },
+  {
+    "name": "orbit-gmail",
+    "desc": "Open Orbit briefing skill — selected by the Orbit pipeline when"
+  },
+  {
+    "name": "orbit-linear",
+    "desc": "Open Orbit briefing skill — selected by the Orbit pipeline when"
+  },
+  {
+    "name": "orbit-notion",
+    "desc": "Open Orbit briefing skill — selected by the Orbit pipeline when"
+  },
+  {
+    "name": "output-skill",
+    "desc": "Overrides default LLM truncation behavior. Enforces complete code generation, bans placeholder patterns, and handles token-limit splits cleanly. Apply to any task requiring exhaustive, unabridged output."
+  },
+  {
+    "name": "paywall-upgrade-cro",
+    "desc": "Design and optimize upgrade screens, paywalls, and upsell modals. Useful for SaaS conversion design and pricing-page experiments."
+  },
+  {
+    "name": "pdf",
+    "desc": "Extract text, create PDFs, and handle forms. Useful for press releases, branded one-pagers, and printable design deliverables."
+  },
+  {
+    "name": "pixelbin-media",
+    "desc": "Generate and edit images and videos with an 85+ API portfolio and build visually appealing website pages via Pixelbin."
+  },
+  {
+    "name": "plan-design-review",
+    "desc": "Senior Designer review: rates each design dimension 0-10, explains what a 10 looks like, and flags AI Slop signals. Useful as a gate before merging UI work."
+  },
+  {
+    "name": "platform-design",
+    "desc": "300+ design rules from Apple HIG, Material Design 3, and WCAG 2.2 for cross-platform apps. Useful when shipping a single design across iOS, Android, and the web."
+  },
+  {
+    "name": "pm-spec",
+    "desc": "Product spec / PRD as a single page — problem, success metrics, scope,"
+  },
+  {
+    "name": "poster-hero",
+    "desc": "Vertical poster or Moments-style share image with strong visual impact."
+  },
+  {
+    "name": "ppt-keynote",
+    "desc": "Apple Keynote-quality slides, one card per screen, with keyboard left/right navigation."
+  },
+  {
+    "name": "pptx",
+    "desc": "Read, generate, and adjust PowerPoint slides, layouts, and templates. Useful for executive decks, training material, and product reviews."
+  },
+  {
+    "name": "pptx-generator",
+    "desc": "Create and edit PowerPoint presentations from scratch with PptxGenJS — MiniMax's production-tested deck pipeline."
+  },
+  {
+    "name": "pptx-html-fidelity-audit",
+    "desc": "Audit a python-pptx export against its source HTML deck, identify layout/content drift (footer overflow, cropped content, missing italic/em, lost styling, off-rhythm spacing), and re-export with strict footer-rail + cursor-flow layout discipline. Use this skill whenever the user has a .pptx that was generated from an HTML slide deck and asks to compare/audit/verify/fix the export — including phrases like \"compare ppt with html\", \"fidelity audit\", \"fix the pptx\", \"ppt is cut off\", \"footer overlap\", \"italic missing in pptx\", \"re-export the deck\", \"pptx-html-fidelity-audit\", or any case where a python-pptx → HTML round-trip needs verification or repair. Also trigger when the user shows you a deck.html and a deck.pptx side by side and is debugging visual differences."
+  },
+  {
+    "name": "pr-feedback-quality-gate",
+    "desc": "Safely track pull request feedback, resolve review comments or merge conflicts, validate fixes, and use a read-only cross-review before committing or pushing follow-up changes."
+  },
+  {
+    "name": "redesign-skill",
+    "desc": "Upgrades existing websites and apps to premium quality. Audits current design, identifies generic AI patterns, and applies high-end design standards without breaking functionality. Works with any CSS framework or vanilla CSS."
+  },
+  {
+    "name": "reference-design-contract",
+    "desc": "Turn vague taste, screenshots, URLs, product notes, or \"make it feel like this\""
+  },
+  {
+    "name": "registry-starter",
+    "desc": "A small community registry starter plugin used to verify FreeCode marketplace install flows."
+  },
+  {
+    "name": "release-notes-one-pager",
+    "desc": "Release notes one-page HTML with highlights, Added, Fixed, Breaking changes,"
+  },
+  {
+    "name": "remotion",
+    "desc": "Programmatic video creation with React. Useful for branded explainers, social cuts, dashboards-to-video, and reproducible motion graphics."
+  },
+  {
+    "name": "replicate",
+    "desc": "Discover, compare, and run AI models using Replicate's API. Strong fit for image, audio, and video generation pipelines that swap models frequently."
+  },
+  {
+    "name": "replit-deck",
+    "desc": "For product and technical management work: turn PRDs, roadmaps, RFCs, architecture reviews, and retros into decision documents. Built around the core query \"pm-feature-business-case-deck\", with product strategy lead judgment, buyer-ready proof, and this outcome: approve the feature, architecture, roadmap, or incident follow-up."
+  },
+  {
+    "name": "research-decision-room",
+    "desc": "Turn messy user research notes, interviews, support tickets, surveys, and product"
+  },
+  {
+    "name": "resume-modern",
+    "desc": "Modern minimal resume, single A4 page, ready for print or PDF export."
+  },
+  {
+    "name": "review-animations",
+    "desc": "Reviews animation and motion code against a high craft bar derived from Emil Kowalski's design engineering philosophy. Default to flagging; approval is earned."
+  },
+  {
+    "name": "screenshot",
+    "desc": "Capture desktop, app windows, or pixel regions across OS platforms. Useful for marketing screenshots, design reviews, and bug reports."
+  },
+  {
+    "name": "screenshots-marketing",
+    "desc": "Generate marketing screenshots with Playwright. Useful for landing-page hero shots, App Store screenshots, and changelog visuals."
+  },
+  {
+    "name": "shadcn-ui",
+    "desc": "Build UI components with shadcn/ui. Pairs with the Stitch design loop to ship structured, accessible components quickly."
+  },
+  {
+    "name": "shader-dev",
+    "desc": "GLSL shader techniques for ray marching, fluid simulation, particle systems, and procedural generation. Useful for hero visuals and motion stills."
+  },
+  {
+    "name": "simple-deck",
+    "desc": "FreeCode's operating review: growth, burn, and the concrete path to sustainability without losing the open ethos. Built as a decision-grade corporate strategy deck for leadership team."
+  },
+  {
+    "name": "slack-gif-creator",
+    "desc": "Create animated GIFs optimized for Slack with validators for size constraints and composable animation primitives."
+  },
+  {
+    "name": "slides",
+    "desc": "Create and edit .pptx presentation decks with PptxGenJS. Useful for sales decks, kickoff briefs, and design-system showcases."
+  },
+  {
+    "name": "social-media-matrix-tracker-template",
+    "desc": "社媒矩阵数据追踪面板模板（Social Media Matrix Tracker）。"
+  },
+  {
+    "name": "social-reddit-card",
+    "desc": "Realistic Reddit post card with vote rail and comment count, suited to video overlays or story sharing."
+  },
+  {
+    "name": "social-spotify-card",
+    "desc": "Spotify Now Playing-style card with album art, progress bar, and playback controls, suited to video overlays or personal homepages."
+  },
+  {
+    "name": "social-x-post-card",
+    "desc": "Realistic X post card with engagement metrics (likes, reposts, views), suited to video overlays or shareable image cards."
+  },
+  {
+    "name": "soft-skill",
+    "desc": "Teaches the AI to design like a high-end agency. Defines the exact fonts, spacing, shadows, card structures, and animations that make a website feel expensive. Blocks all the common defaults that make AI designs look cheap or generic."
+  },
+  {
+    "name": "sora",
+    "desc": "Generate, remix, and manage short video clips via OpenAI's Sora API. Useful for cinematic shots, b-roll, and rapid concept video iteration."
+  },
+  {
+    "name": "speech",
+    "desc": "Generate spoken audio from text using OpenAI's API with built-in voices. Useful for narrated explainers, lecture audio, and quick voiceover tracks."
+  },
+  {
+    "name": "stitch-loop",
+    "desc": "Iterative design-to-code feedback loop. Critique → adjust → ship cycle for tightening visual fidelity between brief and built UI."
+  },
+  {
+    "name": "stitch-skill",
+    "desc": "Semantic Design System Skill for Google Stitch. Generates agent-friendly DESIGN.md files that enforce premium, anti-generic UI standards — strict typography, calibrated color, asymmetric layouts, perpetual micro-motion, and hardware-accelerated performance."
+  },
+  {
+    "name": "swiftui-design",
+    "desc": "SwiftUI 前端设计 skill — anti AI-slop rules, design direction advisor, brand asset protocol, and five-dimension review. Works with Claude Code, Cursor, Codex, and OpenCode."
+  },
+  {
+    "name": "swiss-creative-mode-template",
+    "desc": "Swiss-inspired creative-mode presentation template skill with bold editorial"
+  },
+  {
+    "name": "swiss-user-research-video-template",
+    "desc": "Swiss-style user-research narrative template in warm-paper editorial aesthetics."
+  },
+  {
+    "name": "taste-skill",
+    "desc": "Anti-slop frontend skill for landing pages, portfolios, and redesigns. The agent reads the brief, infers the right design direction, and ships interfaces that do not look templated. Real design systems when applicable, audit-first on redesigns, strict pre-flight check."
+  },
+  {
+    "name": "taste-skill-v1",
+    "desc": "The original v1 taste-skill, preserved for projects depending on its exact behavior. The current default is `design-taste-frontend` (v2 experimental), which is a substantial rewrite. Use this v1 install name only if you need exact backward compatibility."
+  },
+  {
+    "name": "team-okrs",
+    "desc": "OKR tracker page — quarter banner, three objectives with their key"
+  },
+  {
+    "name": "theme-factory",
+    "desc": "Apply professional font and color themes to artifacts including slides, docs, reports, and HTML landing pages. Ships 10 pre-set themes."
+  },
+  {
+    "name": "threejs",
+    "desc": "Three.js skills for creating 3D elements and interactive experiences in the browser — scenes, materials, controls, and post-processing."
+  },
+  {
+    "name": "trading-analysis-dashboard-template",
+    "desc": "Professional trading analysis dashboard template (single-file HTML) with"
+  },
+  {
+    "name": "tweaks",
+    "desc": "Wrap any HTML artifact with a side panel of live, parameterized"
+  },
+  {
+    "name": "ui-skills",
+    "desc": "Opinionated, evolving constraints to guide agents when building interfaces. Useful for keeping output coherent across many small UI pieces."
+  },
+  {
+    "name": "ui-ux-pro-max",
+    "desc": "Catalog-only UI/UX Pro Max entry. The full upstream templates, data, and search workflow are not bundled in FreeCode."
+  },
+  {
+    "name": "ve-midnight-editorial",
+    "desc": "FreeCode's financial review: runway, burn, and the sustainability plan that keeps the project independent. Built as a decision-grade data & finance deck for board, leadership."
+  },
+  {
+    "name": "ve-terminal-mono",
+    "desc": "FreeCode from the CLI: driving the full design workflow with the `od` command — scripted, composable, agent-ready. Built as a decision-grade AI literacy deck for developers, power users."
+  },
+  {
+    "name": "velar-luxury-real-estate",
+    "desc": "Use this plugin when the user wants a high-end luxury real-estate / architecture landing page with cinematic scroll choreography: a typewriter preloader that lifts away, a scroll-driven house image that rises from below and scales up while pinning to a dark statement section, a sticky dark stats band with count-up numbers, and a hover-expand video gallery that slides up over the dark section. Invoke for 'luxury real estate landing page', 'architecture brand site', 'scroll-driven hero with rising building', or when the user references the Velar template."
+  },
+  {
+    "name": "venice-audio-music",
+    "desc": "Music generation queueing, retrieval, and completion endpoints via Venice.ai. Suited for jingles, background loops, and prototype scoring."
+  },
+  {
+    "name": "venice-audio-speech",
+    "desc": "Text-to-speech models, voices, formats, and streaming via Venice.ai. Useful for narration, voiceover, and conversational agent voices."
+  },
+  {
+    "name": "venice-image-edit",
+    "desc": "Image edits, upscaling, and background removal via the Venice.ai API."
+  },
+  {
+    "name": "venice-image-generate",
+    "desc": "Image generation endpoints and available styles via the Venice.ai API."
+  },
+  {
+    "name": "venice-video",
+    "desc": "Video generation and transcription workflows via the Venice.ai API."
+  },
+  {
+    "name": "vfx-text-cursor",
+    "desc": "Cursor light trail, chromatic rays, and directional flares for word-by-word quote reveals in video intros."
+  },
+  {
+    "name": "video-downloader",
+    "desc": "Download videos from YouTube and other platforms for offline viewing, editing, or archival with support for various formats and quality options."
+  },
+  {
+    "name": "video-hyperframes",
+    "desc": "Hyperframes / Remotion-compatible continuous frame animation with autoplay support."
+  },
+  {
+    "name": "video-shortform",
+    "desc": "Short-form video generation skill — 3-10 second clips for product"
+  },
+  {
+    "name": "web-artifacts-builder",
+    "desc": "Build complex claude.ai HTML artifacts with React and Tailwind. Anthropic's reference workflow for shipping rich, embeddable artifacts."
+  },
+  {
+    "name": "web-clone",
+    "desc": ">"
+  },
+  {
+    "name": "web-design-guidelines",
+    "desc": "Review UI code for Web Interface Guidelines compliance by the Vercel engineering team. Covers layout, typography, color, motion, and accessibility for product UI."
+  },
+  {
+    "name": "web-prototype-taste-brutalist",
+    "desc": "Swiss industrial-print web prototype. Newsprint canvas, monolithic black grotesque, viewport-bleeding numerals, hairline grid dividers, hazard-red accent, ASCII syntax decoration. Distilled from Leonxlnx/taste-skill `brutalist-skill` (Swiss Industrial Print mode)."
+  },
+  {
+    "name": "web-prototype-taste-editorial",
+    "desc": "Editorial-minimalist web prototype. Warm monochrome canvas, serif display + grotesque body, 1px hairline borders, muted pastel chips, generous macro-whitespace, ambient micro-motion. Distilled from Leonxlnx/taste-skill `minimalist-skill`."
+  },
+  {
+    "name": "web-prototype-taste-soft",
+    "desc": "Apple-tier soft web prototype. Silver/cream canvas, double-bezel cards, button-in-button CTAs, generous squircle radii, spring motion, ambient mesh. Distilled from Leonxlnx/taste-skill `soft-skill` + sections 4–8 of `taste-skill`."
+  },
+  {
+    "name": "webgl-aurora-veil",
+    "desc": "A self-contained WebGL2 hero: layered aurora light curtains warped over a night sky scattered with stars; move the cursor to sway the veil."
+  },
+  {
+    "name": "webgl-caustic-pool",
+    "desc": "A self-contained WebGL2 hero: animated water caustics woven from domain-warped ripples; click the water to drop a ripple. No meshes, no textures."
+  },
+  {
+    "name": "webgl-depth-gallery",
+    "desc": "A scroll-reactive 3D image gallery in Three.js: Z-stacked images crossfade over per-image mood backgrounds with velocity breath, a glowing cursor trail and an editorial CMYK/RGB/HEX/PMS color card."
+  },
+  {
+    "name": "webgl-distortion-grain",
+    "desc": "A vertical gallery (Three.js) where planes bend with scroll velocity, ripple under the cursor via simplex noise, and carry a film grain."
+  },
+  {
+    "name": "webgl-experience",
+    "desc": "A full-screen, real-time WebGL/WebGL2 experience — animated shaders, 3D"
+  },
+  {
+    "name": "webgl-halftone-drift",
+    "desc": "A self-contained WebGL2 hero: a flowing field screened through a rotated halftone dot grid into a duotone print aesthetic; move the cursor to bend the drift."
+  },
+  {
+    "name": "webgl-holographic-foil",
+    "desc": "A self-contained WebGL2 hero: thin-film interference over a crushed-foil surface whose palette shifts with the viewing angle; move the cursor to tilt the film."
+  },
+  {
+    "name": "webgl-horizontal-parallax",
+    "desc": "A horizontal-scroll WebGL gallery (Three.js): frames glide sideways with lerp smoothing and each image parallaxes its texture (UV shift) by its position in the viewport."
+  },
+  {
+    "name": "webgl-liquid-iridescence",
+    "desc": "A self-contained WebGL2 hero: a living oil-on-water field brightened into iridescent caustic filaments; move the cursor to bend the flow."
+  },
+  {
+    "name": "webgl-liquid-metal",
+    "desc": "A real-time liquid-metal shader — a domain-warped noise field shaded as"
+  },
+  {
+    "name": "webgl-neon-grid",
+    "desc": "A real-time synthwave scene — a perspective floor grid scrolling toward a"
+  },
+  {
+    "name": "webgl-particle-galaxy",
+    "desc": "A real-time particle galaxy — tens of thousands of additive-blended GPU"
+  },
+  {
+    "name": "webgl-pixel-reveal-gallery",
+    "desc": "A scroll-reactive masonry gallery (Three.js + GSAP) where each image develops from a pixel/grid dissolve on viewport entry, with a split-text heading and click-to-fullscreen Flip."
+  },
+  {
+    "name": "webgl-raymarched-hero",
+    "desc": "A real-time raymarched 3D hero — soft-shadowed morphing metaballs with a"
+  },
+  {
+    "name": "webgl-voronoi-cells",
+    "desc": "A self-contained WebGL2 hero: a living Voronoi network with drifting feature points, palette-keyed cells and glowing boundaries; move the cursor to push the cells."
+  },
+  {
+    "name": "weekly-update",
+    "desc": "FreeCode's weekly metrics standup: this week's numbers, the one anomaly, and the single decision it forces. Built as a decision-grade data & finance deck for ops & growth team."
+  },
+  {
+    "name": "weread-year-in-review-video-template",
+    "desc": "WeRead-inspired HyperFrames video template for vertical annual reading reports,"
+  },
+  {
+    "name": "worker-visualizer",
+    "desc": "A real-time data/particle/simulation visualizer whose heavy compute runs in"
+  },
+  {
+    "name": "wpds",
+    "desc": "WordPress Design System. Apply WordPress's official design tokens, typography, and component patterns to themes and sites."
+  },
+  {
+    "name": "writing-guidelines",
+    "desc": "Review docs/prose for Writing Guidelines compliance. Use when asked to \"review my docs\", \"check writing style\", \"audit prose\", \"review docs voice and tone\", or \"check this page against the writing handbook\"."
+  },
+  {
+    "name": "x-research",
+    "desc": "X/Twitter public sentiment research for recent market, company, product, or"
+  },
+  {
+    "name": "youtube-clipper",
+    "desc": "YouTube clip generation and editing with automated workflows — pull source video, slice highlights, add captions, and export."
+  }
+]
