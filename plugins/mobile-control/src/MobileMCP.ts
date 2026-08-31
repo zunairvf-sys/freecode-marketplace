@@ -96,7 +96,7 @@ export const mobileTools = [
   },
   {
     name: 'call',
-    description: 'Execute a tool on a paired Android device running the FreeCode Agent app. The tool parameter specifies which native capability to use (e.g. computer.tap, screen.screenshot, accessibility.find). The device routes the call through its MobileGatewayService to the appropriate service.',
+    description: 'Execute a tool on a paired Android device running the FreeCode Agent app. The tool parameter specifies which native capability to use. Input tools: computer.tap, computer.double_tap, computer.long_press, computer.swipe, computer.drag_path (curved multi-point one-finger drag), computer.multi_touch (simultaneous multi-finger strokes), computer.pinch (two-finger zoom), computer.type, computer.key, computer.scroll. Observation: screen.screenshot, screen.dump, screen.observe, accessibility.find. Plus device.info and other device.* controls. The device routes the call through its MobileGatewayService to the appropriate service.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -106,7 +106,7 @@ export const mobileTools = [
         },
         tool: {
           type: 'string',
-          description: 'Tool to execute (e.g. computer.tap, accessibility.find, screen.screenshot)',
+          description: 'Tool to execute (e.g. computer.tap, computer.drag_path, computer.multi_touch, computer.pinch, accessibility.find, screen.screenshot)',
         },
         arguments: {
           type: 'object',

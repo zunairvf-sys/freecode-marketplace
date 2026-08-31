@@ -20,7 +20,7 @@ build, no `npm install`, no setup step.**
 | `get_device` | Details + capabilities + current foreground app for one device. |
 | `pair` | Pair with a device (enter the code shown on the phone, or generate one). |
 | `unpair` | Remove a device's trust. |
-| `call` | Run a native tool on the phone (`computer.tap`, `computer.swipe`, `computer.type`, `accessibility.find`, `screen.dump`, `device.info`, …). |
+| `call` | Run a native tool on the phone (`computer.tap`, `computer.swipe`, `computer.drag_path`, `computer.multi_touch`, `computer.pinch`, `computer.long_press`, `computer.type`, `accessibility.find`, `screen.dump`, `device.info`, …). |
 | `batch` | Run one tool across several phones at once. |
 | `screenshot` | Capture the current screen (MediaProjection when active, else accessibility). |
 | `screen_stream` | Start/stop a live screen stream; the first frame is returned as an image. |
