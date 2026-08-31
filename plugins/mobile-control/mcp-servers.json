@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "mobile": {
+      "command": "node",
+      "args": ["${FREECODE_PLUGIN_ROOT}/dist/index.mjs"],
+      "description": "Discover and control Android phones running the FreeCode Agent app over local Wi-Fi. Tools: list_devices, get_device, pair, unpair, call (computer.tap/swipe/type, accessibility.find, device.info, screen.dump…), batch, screenshot, screen_stream. Pairing is trust-based and persists indefinitely on both the desktop and the phone."
+    }
+  }
+}

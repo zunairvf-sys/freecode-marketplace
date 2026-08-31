@@ -1,0 +1,20 @@
+{
+  "name": "freecode-mobile-control",
+  "version": "1.0.0",
+  "description": "Discover and control Android phones running the FreeCode Agent app over your local Wi-Fi. Pair once (persists indefinitely), then drive taps/swipes/typing, read the accessibility tree, take screenshots, and stream the screen. Supports many phones on one workspace and one phone shared across many workspaces. Pure JS (bundled) — no native build, no install step.",
+  "author": {
+    "name": "FreeCode",
+    "email": "support@freecode.ai"
+  },
+  "homepage": "https://freecode.ai",
+  "license": "MIT",
+  "keywords": ["mobile", "android", "automation", "phone", "accessibility", "screenshot", "screen-stream", "mcp", "wifi", "remote-control"],
+  "category": "automation",
+  "tags": ["mobile", "android", "automation", "mcp", "remote-control", "accessibility"],
+  "mcpServers": {
+    "mobile": {
+      "command": "node",
+      "args": ["${FREECODE_PLUGIN_ROOT}/dist/index.mjs"]
+    }
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "freecode-mobile-control",
+  "version": "1.0.0",
+  "description": "MCP server to discover and control Android phones running the FreeCode Agent app over local Wi-Fi (list devices, pair, call native tools, screenshot, live screen stream). Multi-phone and multi-workspace; pairing persists indefinitely.",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "freecode-mobile-control": "dist/index.mjs"
+  },
+  "main": "dist/index.mjs",
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "bun build ./src/index.ts --target=node --outfile dist/index.mjs",
+    "start": "node dist/index.mjs"
+  },
+  "keywords": ["mcp", "android", "mobile", "automation", "freecode", "accessibility", "wifi"],
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "ws": "^8.21.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.12",
+    "typescript": "^5.6.0"
+  }
+}
