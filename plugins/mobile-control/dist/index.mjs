@@ -19067,6 +19067,8 @@ class MobileDiscovery {
   }
   probePort(host, port) {
     return new Promise((resolve) => {
+      let settled = false;
+      const placeholderId = `fc-${host.replace(/\./g, "")}`;
       const socket = net.createConnection({ host, port, timeout: 500 }, () => {
         try {
           const crypto = __require("crypto");
@@ -19083,34 +19085,142 @@ class MobileDiscovery {
           ].join(`\r
 `);
           socket.write(handshake);
-          socket.setEncoding("utf8");
-          socket.once("data", (data) => {
-            if (String(data).includes("101")) {
-              this.registerDevice({
-                deviceId: `fc-${host.replace(/\./g, "")}`,
-                deviceName: `FreeCode Device (${host})`,
-                model: "Android Device",
-                host,
-                port
-              });
-            }
+          let buf = Buffer.alloc(0);
+          let upgraded = false;
+          const fallbackTimer = setTimeout(() => finish(placeholderId, host), 1200);
+          const finish = (deviceId, hostForName) => {
+            if (settled)
+              return;
+            settled = true;
+            clearTimeout(fallbackTimer);
+            this.registerDevice({
+              deviceId,
+              deviceName: `FreeCode Device (${hostForName})`,
+              model: "Android Device",
+              host,
+              port
+            });
             socket.destroy();
             resolve();
+          };
+          socket.on("data", (chunk) => {
+            buf = Buffer.concat([buf, Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)]);
+            if (!upgraded) {
+              const headerEnd = buf.indexOf(`\r
+\r
+`);
+              if (headerEnd === -1)
+                return;
+              const header = buf.slice(0, headerEnd).toString("utf8");
+              if (!header.includes(" 101 ")) {
+                clearTimeout(fallbackTimer);
+                socket.destroy();
+                if (!settled) {
+                  settled = true;
+                  resolve();
+                }
+                return;
+              }
+              upgraded = true;
+              buf = buf.slice(headerEnd + 4);
+              socket.write(this.encodeClientFrame(JSON.stringify({
+                type: "authenticate",
+                data: { hostId: "fc-discovery-probe", hostName: "discovery-probe" }
+              })));
+            }
+            const realId = this.extractDeviceIdFromFrames(buf);
+            if (realId)
+              finish(realId, realId);
           });
         } catch {
           socket.destroy();
-          resolve();
+          if (!settled) {
+            settled = true;
+            resolve();
+          }
         }
       });
       socket.on("error", () => {
         socket.destroy();
-        resolve();
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
       });
       socket.on("timeout", () => {
         socket.destroy();
-        resolve();
+        if (!settled) {
+          settled = true;
+          resolve();
+        }
       });
     });
+  }
+  encodeClientFrame(text) {
+    const crypto = __require("crypto");
+    const payload = Buffer.from(text, "utf8");
+    const len = payload.length;
+    const mask = crypto.randomBytes(4);
+    let header;
+    if (len < 126) {
+      header = Buffer.from([129, 128 | len]);
+    } else if (len < 65536) {
+      header = Buffer.alloc(4);
+      header[0] = 129;
+      header[1] = 128 | 126;
+      header.writeUInt16BE(len, 2);
+    } else {
+      header = Buffer.alloc(10);
+      header[0] = 129;
+      header[1] = 128 | 127;
+      header.writeBigUInt64BE(BigInt(len), 2);
+    }
+    const masked = Buffer.alloc(len);
+    for (let i = 0;i < len; i++)
+      masked[i] = payload[i] ^ mask[i % 4];
+    return Buffer.concat([header, mask, masked]);
+  }
+  extractDeviceIdFromFrames(buf) {
+    let off = 0;
+    while (off + 2 <= buf.length) {
+      const opcode = buf[off] & 15;
+      const b1 = buf[off + 1];
+      const masked = (b1 & 128) !== 0;
+      let len = b1 & 127;
+      let headerLen = 2;
+      if (len === 126) {
+        if (off + 4 > buf.length)
+          break;
+        len = buf.readUInt16BE(off + 2);
+        headerLen = 4;
+      } else if (len === 127) {
+        if (off + 10 > buf.length)
+          break;
+        len = Number(buf.readBigUInt64BE(off + 2));
+        headerLen = 10;
+      }
+      const maskLen = masked ? 4 : 0;
+      const payloadStart = off + headerLen + maskLen;
+      if (payloadStart + len > buf.length)
+        break;
+      let payload = buf.slice(payloadStart, payloadStart + len);
+      if (masked) {
+        const m = buf.slice(off + headerLen, off + headerLen + 4);
+        const un = Buffer.alloc(len);
+        for (let i = 0;i < len; i++)
+          un[i] = payload[i] ^ m[i % 4];
+        payload = un;
+      }
+      if (opcode === 1) {
+        try {
+          const msg = JSON.parse(payload.toString("utf8"));
+          if (msg && typeof msg.deviceId === "string" && msg.deviceId)
+            return msg.deviceId;
+        } catch {}
+      }
+      off = payloadStart + len;
+    }
+    return;
   }
   sendMDNSQuery(socket) {
     const query = Buffer.alloc(74);

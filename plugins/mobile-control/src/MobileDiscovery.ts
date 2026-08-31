@@ -261,9 +261,20 @@ export class MobileDiscovery {
     await Promise.all(workers)
   }
 
-  /** Try to connect to a host on port 8765 and register if successful */
+  /** Try to connect to a host on port 8765 and register if successful.
+   *
+   * On a WebSocket "101" upgrade we now read one step further: we send a probe
+   * `authenticate` frame and parse the phone's reply (`auth_required` /
+   * `device_info`), which carries the real stable `deviceId` (fc-<hash>). We
+   * register under THAT id instead of the IP-derived placeholder, so discovery
+   * names the device correctly up front — no reliance on a later reconcile, and
+   * the id no longer tracks the DHCP address. If the phone sends nothing usable
+   * within a short window we fall back to the IP placeholder (previous
+   * behaviour) so a quiet-but-present gateway is still listed. */
   private probePort(host: string, port: number): Promise<void> {
     return new Promise((resolve) => {
+      let settled = false
+      const placeholderId = `fc-${host.replace(/\./g, '')}`
       const socket = net.createConnection({ host, port, timeout: 500 }, () => {
         try {
           const crypto = require('crypto')
@@ -279,32 +290,112 @@ export class MobileDiscovery {
             ''
           ].join('\r\n')
           socket.write(handshake)
-          socket.setEncoding('utf8')
-          // Use once() — device sends handshake + frame in one TCP packet
-          // We detect the gateway by the 101 response and register with IP-based ID.
-          // The real device ID is fetched during the pair/connect flow.
-          socket.once('data', (data: any) => {
-            if (String(data).includes('101')) {
-              // WebSocket upgrade confirmed — this is a MobileMCP gateway
-              this.registerDevice({
-                deviceId: `fc-${host.replace(/\./g, '')}`,
-                deviceName: `FreeCode Device (${host})`,
-                model: 'Android Device',
-                host,
-                port,
-              })
-            }
+          // Binary mode: we need raw bytes to decode WebSocket frames.
+          let buf = Buffer.alloc(0)
+          let upgraded = false
+          // Fallback: register with the IP placeholder if no real id arrives.
+          const fallbackTimer = setTimeout(() => finish(placeholderId, host), 1200)
+          const finish = (deviceId: string, hostForName: string) => {
+            if (settled) return
+            settled = true
+            clearTimeout(fallbackTimer)
+            this.registerDevice({
+              deviceId,
+              deviceName: `FreeCode Device (${hostForName})`,
+              model: 'Android Device',
+              host,
+              port,
+            })
             socket.destroy()
             resolve()
+          }
+          socket.on('data', (chunk: Buffer) => {
+            buf = Buffer.concat([buf, Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)])
+            if (!upgraded) {
+              const headerEnd = buf.indexOf('\r\n\r\n')
+              if (headerEnd === -1) return
+              const header = buf.slice(0, headerEnd).toString('utf8')
+              if (!header.includes(' 101 ')) { clearTimeout(fallbackTimer); socket.destroy(); if (!settled) { settled = true; resolve() }; return }
+              upgraded = true
+              buf = buf.slice(headerEnd + 4)
+              // Prompt the phone for its identity. A probe hostId is untrusted,
+              // so the reply is `auth_required` — which still carries deviceId —
+              // and no trust is created by this scan.
+              socket.write(this.encodeClientFrame(JSON.stringify({
+                type: 'authenticate',
+                data: { hostId: 'fc-discovery-probe', hostName: 'discovery-probe' },
+              })))
+            }
+            const realId = this.extractDeviceIdFromFrames(buf)
+            if (realId) finish(realId, realId)
           })
         } catch {
           socket.destroy()
-          resolve()
+          if (!settled) { settled = true; resolve() }
         }
       })
-      socket.on('error', () => { socket.destroy(); resolve() })
-      socket.on('timeout', () => { socket.destroy(); resolve() })
+      socket.on('error', () => { socket.destroy(); if (!settled) { settled = true; resolve() } })
+      socket.on('timeout', () => { socket.destroy(); if (!settled) { settled = true; resolve() } })
     })
+  }
+
+  /** Encode a masked client→server WebSocket text frame (RFC 6455). */
+  private encodeClientFrame(text: string): Buffer {
+    const crypto = require('crypto')
+    const payload = Buffer.from(text, 'utf8')
+    const len = payload.length
+    const mask = crypto.randomBytes(4)
+    let header: Buffer
+    if (len < 126) {
+      header = Buffer.from([0x81, 0x80 | len])
+    } else if (len < 65536) {
+      header = Buffer.alloc(4)
+      header[0] = 0x81; header[1] = 0x80 | 126; header.writeUInt16BE(len, 2)
+    } else {
+      header = Buffer.alloc(10)
+      header[0] = 0x81; header[1] = 0x80 | 127; header.writeBigUInt64BE(BigInt(len), 2)
+    }
+    const masked = Buffer.alloc(len)
+    for (let i = 0; i < len; i++) masked[i] = payload[i] ^ mask[i % 4]
+    return Buffer.concat([header, mask, masked])
+  }
+
+  /** Scan buffered server→client WebSocket frames for a JSON message that
+   *  carries a `deviceId`, returning the first one found (or undefined). */
+  private extractDeviceIdFromFrames(buf: Buffer): string | undefined {
+    let off = 0
+    while (off + 2 <= buf.length) {
+      const opcode = buf[off] & 0x0f
+      const b1 = buf[off + 1]
+      const masked = (b1 & 0x80) !== 0
+      let len = b1 & 0x7f
+      let headerLen = 2
+      if (len === 126) {
+        if (off + 4 > buf.length) break
+        len = buf.readUInt16BE(off + 2); headerLen = 4
+      } else if (len === 127) {
+        if (off + 10 > buf.length) break
+        len = Number(buf.readBigUInt64BE(off + 2)); headerLen = 10
+      }
+      const maskLen = masked ? 4 : 0
+      const payloadStart = off + headerLen + maskLen
+      if (payloadStart + len > buf.length) break
+      let payload = buf.slice(payloadStart, payloadStart + len)
+      if (masked) {
+        const m = buf.slice(off + headerLen, off + headerLen + 4)
+        const un = Buffer.alloc(len)
+        for (let i = 0; i < len; i++) un[i] = payload[i] ^ m[i % 4]
+        payload = un
+      }
+      if (opcode === 0x1) {
+        try {
+          const msg = JSON.parse(payload.toString('utf8'))
+          if (msg && typeof msg.deviceId === 'string' && msg.deviceId) return msg.deviceId
+        } catch { /* not JSON / partial — keep scanning */ }
+      }
+      off = payloadStart + len
+    }
+    return undefined
   }
 
   /** Send an mDNS query for _freecode-mcp._tcp */
