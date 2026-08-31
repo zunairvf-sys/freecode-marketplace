@@ -62,6 +62,32 @@ header — trust is keyed on a stable id, **not** on the phone's IP address.
 A phone's DHCP address can change freely — discovery re‑resolves it by device id
 and updates the transport target, so pairing is never lost to an IP change.
 
+### Device IDs — real vs. placeholder (important)
+
+A device's **stable id** is `fc-<hash>` (e.g. `fc-ec0937b504e250`), derived on
+the phone from a stable device identifier — it never changes, and **trust is
+keyed on it**.
+
+There are two discovery paths and they name devices differently *until the first
+connect*:
+
+- **mDNS** advertises the phone's real stable id directly, so `list_devices`
+  shows `fc-<hash>` immediately.
+- The **TCP subnet‑scan fallback** (used when mDNS multicast is blocked — common
+  on many home/guest routers) can only confirm that *a* gateway answers on
+  `<ip>:8765`. It can't read the real id without connecting, so it registers a
+  **temporary placeholder id derived from the IP**: `fc-<ip-with-dots-stripped>`
+  — e.g. `192.168.0.101` → `fc-1921680101`, with the name
+  `FreeCode Device (192.168.0.101)`.
+
+That placeholder is **not** the device's identity — it's a stand‑in. On the
+first `pair`/`call`, the phone reports its real stable id during the handshake
+and the registry **re‑keys the entry onto `fc-<hash>`**, so trust matches and
+the id stops tracking the IP. If you `pair` while a device still shows the
+IP‑style id, that's fine — it reconciles automatically. Prefer addressing a
+device by its **name** or real `fc-<hash>` id once known; treat any
+`fc-<all-digits>` id as provisional.
+
 ## Many‑to‑many by design
 
 - **Many phones → one workspace.** The device registry is keyed by device id, so

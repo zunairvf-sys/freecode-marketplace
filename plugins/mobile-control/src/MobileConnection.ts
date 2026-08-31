@@ -379,8 +379,12 @@ export class MobileConnection {
           publicKeyBase64: msg.publicKeyBase64 ?? '',
           model: msg.model ?? 'Unknown',
         }
-        // Update registry with real device ID from device
+        // Update registry with real device ID from device. Re-key the registry
+        // entry off the IP-derived placeholder onto the phone's stable id so
+        // trust (stored under the real id) matches and the id survives DHCP
+        // changes.
         if (msg.deviceId && msg.deviceId !== this.deviceId) {
+          mobileRegistry.reconcileId(this.deviceId, msg.deviceId)
           this.deviceId = msg.deviceId
         }
 
@@ -430,7 +434,9 @@ export class MobileConnection {
           }
           // Update registry with real device info
           if (msg.deviceId !== this.deviceId) {
-            // Device returned a different ID — update connection
+            // Device returned a different ID — re-key the registry entry off the
+            // IP-derived placeholder onto this stable id, then update connection.
+            mobileRegistry.reconcileId(this.deviceId, msg.deviceId)
             this.deviceId = msg.deviceId
           }
           // Update registry with corrected device info

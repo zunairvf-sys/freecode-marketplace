@@ -70,6 +70,38 @@ export class MobileRegistry {
     }
   }
 
+  /**
+   * Re-key a device from a placeholder id to its real stable id.
+   *
+   * Devices found by the TCP subnet scan are first registered under an
+   * IP-derived placeholder (`fc-<ip-with-dots-stripped>`), because the scan
+   * only confirms a WebSocket gateway — it can't read the phone's real id
+   * without a full connect. Once the phone reports its stable deviceId during
+   * the auth/connect handshake, call this to migrate the registry entry onto
+   * that id (merging into any existing real-id entry) and drop the placeholder.
+   * Without this, trust — which is stored under the real id — never matches the
+   * placeholder, and the id silently tracks the DHCP address instead of the
+   * device. Returns the canonical entry under `newId`, or undefined if the old
+   * entry is gone.
+   */
+  public reconcileId(oldId: string, newId: string): MobileDeviceInfo | undefined {
+    if (!oldId || !newId || oldId === newId) return this.devices.get(newId)
+    const old = this.devices.get(oldId)
+    if (!old) return this.devices.get(newId)
+    const existing = this.devices.get(newId)
+    const merged: MobileDeviceInfo = {
+      ...old,
+      ...existing,
+      deviceId: newId,
+      host: old.host || existing?.host || '',
+      port: old.port || existing?.port || 0,
+      lastSeen: Math.max(old.lastSeen ?? 0, existing?.lastSeen ?? 0),
+    }
+    this.devices.set(newId, merged)
+    this.devices.delete(oldId)
+    return merged
+  }
+
   /** Update device status */
   public updateStatus(deviceId: string, status: MobileDeviceStatus): void {
     const device = this.devices.get(deviceId)

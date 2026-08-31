@@ -18243,6 +18243,25 @@ class MobileRegistry {
       });
     }
   }
+  reconcileId(oldId, newId) {
+    if (!oldId || !newId || oldId === newId)
+      return this.devices.get(newId);
+    const old = this.devices.get(oldId);
+    if (!old)
+      return this.devices.get(newId);
+    const existing = this.devices.get(newId);
+    const merged = {
+      ...old,
+      ...existing,
+      deviceId: newId,
+      host: old.host || existing?.host || "",
+      port: old.port || existing?.port || 0,
+      lastSeen: Math.max(old.lastSeen ?? 0, existing?.lastSeen ?? 0)
+    };
+    this.devices.set(newId, merged);
+    this.devices.delete(oldId);
+    return merged;
+  }
   updateStatus(deviceId, status) {
     const device = this.devices.get(deviceId);
     if (!device)
@@ -18676,6 +18695,7 @@ class MobileConnection {
           model: msg.model ?? "Unknown"
         };
         if (msg.deviceId && msg.deviceId !== this.deviceId) {
+          mobileRegistry.reconcileId(this.deviceId, msg.deviceId);
           this.deviceId = msg.deviceId;
         }
         this._authState.pairingRequired = true;
@@ -18715,6 +18735,7 @@ class MobileConnection {
             model: msg.model ?? "Unknown"
           };
           if (msg.deviceId !== this.deviceId) {
+            mobileRegistry.reconcileId(this.deviceId, msg.deviceId);
             this.deviceId = msg.deviceId;
           }
           const existing = mobileRegistry.get(this.deviceId);
